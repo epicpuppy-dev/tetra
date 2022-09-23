@@ -18,7 +18,11 @@ nextCanvas.height = cellSize * 15 + 14;
 ctx.lineWidth = 1;
 colors = ["#000000", "#00ffff", "#0000ff", "#ff8800", "#ffff00", "#00ff00", "#dd00dd", "#ff0000", "#222222"];
 const G = {};
-G.level = 6;
+G.display = document.getElementById('score');
+G.level = 1;
+G.score = 0;
+G.lines = 0;
+G.nextLevel = 10;
 G.gravity = {};
 G.gravity.speed = fallSpeed(G.level);
 G.gravity.fall = G.gravity.speed;
@@ -374,7 +378,7 @@ class Cell {
 }
 
 function fallSpeed(level) {
-    return Math.ceil((0.8-((level-1)*0.007))**(level-1)*60);
+    return Math.ceil((0.8-((level-1)*-0.0024))**(level)*60);
 }
 
 /** @type {Cell[][]} */
@@ -444,12 +448,13 @@ function main() {
             drawNext();
         }
     } else {
-        G.gravity.are = 60 / G.level;
+        G.gravity.are = 60 / (G.level);
     }
     G.gravity.fall--;
     if (G.gravity.fall <= 0) {
         G.piece.move(0, -1);
         G.gravity.fall = G.gravity.speed;
+        if (G.key.down.soft) G.score++;
     }
     if (G.piece.onFloor()) {
         if (--G.gravity.lock <= 0) {
@@ -462,7 +467,7 @@ function main() {
 }
 
 function newGame() {
-    G.level = 5;
+    G.level = parseInt(document.getElementById('start-level').value);
     G.gravity = {};
     G.gravity.speed = fallSpeed(G.level);
     G.gravity.fall = G.gravity.speed;
@@ -473,6 +478,9 @@ function newGame() {
         right: false,
         soft: false,
     };
+    G.score = 0;
+    G.lines = 0;
+    G.nextLevel = Math.min(G.level * 10 + 10, Math.max(100, G.level * 10 - 50));
     G.piece = null;
     G.ghost = null;
     G.firstHold = true;
@@ -496,6 +504,7 @@ function newGame() {
             G.grid[x][y] = new Cell(false, "#000", false);
         }
     }
+    G.display.innerHTML = `LEVEL ${G.level} | LINES 0000 | SCORE 0000000`;
 }
 
 function checkLines() {
@@ -506,6 +515,10 @@ function checkLines() {
                 lines[y] = false;
             }
         }
+    }
+    var cleared = 0;
+    for (var l = 0; l < lines.length; l++) {
+        if (lines[l]) cleared++;
     }
     for (var x = 0; x < G.grid.length; x++) {
         var line = lines.concat();
@@ -518,6 +531,27 @@ function checkLines() {
             }
         }
     }
+    G.lines += cleared;
+    G.nextLevel -= cleared;
+    if (G.nextLevel <= 0) {
+        G.nextLevel += 10;
+        G.level++;
+        G.gravity.speed = fallSpeed(G.level);
+    }
+    switch (cleared) {
+        case 4:
+            G.score += 300 * (G.level);
+        case 3:
+            G.score += 200 * (G.level);
+        case 2:
+            G.score += 200 * (G.level);
+        case 1:
+            G.score += 100 * (G.level);
+            break;
+    }
+    var lineDisplay = "0".repeat(4 - G.lines.toString().length) + G.lines;
+    var scoreDisplay = "0".repeat(7 - G.score.toString().length) + G.score;
+    G.display.innerHTML = `LEVEL ${G.level} | LINES ${lineDisplay} | SCORE ${scoreDisplay}`;
 }
 
 function drawNext() {
@@ -581,7 +615,7 @@ document.addEventListener('keydown', (e) => {
     }
     if (e.code == G.key.bindings.soft) {
         if (!G.key.down.soft) {
-            G.gravity.speed /= 10;
+            G.gravity.speed = 1;
             G.gravity.fall = 0;
         }
         G.key.down.soft = true;
@@ -589,6 +623,7 @@ document.addEventListener('keydown', (e) => {
     if (e.code == G.key.bindings.hard) {
         while (!G.piece.onFloor()) {
             G.piece.move(0, -1);
+            G.score += 2;
         }
         G.piece.lock();
         G.piece = null;
@@ -607,6 +642,7 @@ document.addEventListener('keydown', (e) => {
         } else {
             G.piece = null;
         }
+        G.gravity.are = 0;
         //update hold display
         holdCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
         holdStartLeft = (4 - G.pieces[G.hold].width) / 2;
@@ -617,7 +653,6 @@ document.addEventListener('keydown', (e) => {
         }
         debug.innerHTML = `${holdStartLeft}, ${holdStartBottom}, ${JSON.stringify(G.pieces[G.hold])}`;
         G.holdable = false;
-        G.gravity.are = 0;
     }
     try {
         if (e.code == G.key.bindings.rotateCW) {
@@ -640,7 +675,7 @@ document.addEventListener('keyup', (e) => {
     }
     if (e.code == G.key.bindings.soft) {
         if (G.key.down.soft) {
-            G.gravity.speed *= 10;
+            G.gravity.speed = fallSpeed(G.level);
         }
         G.key.down.soft = false;
     }

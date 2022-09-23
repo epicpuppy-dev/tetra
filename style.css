@@ -1,7 +1,7 @@
 body {
     background-color: black;
     color: white;
-    font-family: sans-serif;
+    font-family: monospace;
     text-align: center;
 }
 canvas {
@@ -52,5 +52,8 @@ input[type="color"] {
     width: 2.5em;
 }
 #das-speed {
+    width: 2em;
+}
+#start-level {
     width: 2em;
 }
