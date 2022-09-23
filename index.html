@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TETRA</title>
+        <link rel="stylesheet" type="text/css" href="style.css"/>
+    </head>
+    <body>
+        <div id="main">
+            <div id="hold-container">
+                <h3 id="hold">HOLD</h3>
+                <canvas id="hold-canvas" width="100" height="200"></canvas>
+            </div>
+            <canvas id="game" width="100" height="200"></canvas>
+            <div id="next-container">
+                <h3 id="next">NEXT</h3>
+                <canvas id="next-canvas" width="100" height="200"></canvas>
+            </div>
+        </div><br>
+        <p id="debug">DEBUG</p>
+        <button onclick="newGame()">NEW GAME</button>
+        <h2>Settings</h2>
+        <button onclick="updateSettings()">APPLY</button><br>
+        <br>
+        <div id="settings">
+            <div id="general" class="set-cat">
+                Block Size: <input id="cell-size" type="number" value="24" max="64">px<br>
+                <br>
+            </div>
+            <div id="das" class="set-cat">
+                <b>DAS</b> @ 60fps  <br>
+                Delay: <input id="das-delay" type="number" value="15" max="600">F<br>
+                Speed: <input id="das-speed" type="number" value="3" max="60">F<br>
+                <br>
+            </div>
+            <div id="key" class="set-cat">
+                <b>KEYS</b><br>
+                Left: <button id="key-left" onclick="rebind('left')">ArrowLeft</button><br>
+                Right: <button id="key-right" onclick="rebind('right')">ArrowRight</button><br>
+                Soft Drop: <button id="key-soft" onclick="rebind('soft')">ArrowDown</button><br>
+                Hard Drop: <button id="key-hard" onclick="rebind('hard')">Space</button><br>
+                Rotate CW: <button id="key-rotateCW" onclick="rebind('rotateCW')">X</button><br>
+                Rotate CCW: <button id="key-rotateCCW" onclick="rebind('rotateCCW')">Z</button><br>
+                Hold: <button id="key-hold" onclick="rebind('hold')">ShiftLeft</button><br>
+                <br>
+            </div>
+            <div id="colors" class="set-cat">
+                <b>THEME</b><br>
+                Background Color: <input type="color" value="#000000"><br>
+                Game Background Color: <input type="color" value="#000000"><br>
+                Grid Color: <input type="color" value="#222222"><br>
+                Border Color: <input type="color" value="#555555"><br>
+                I Piece Color: <input type="color" value="#00ffff"><br>
+                J Piece Color: <input type="color" value="#0000ff"><br>
+                L Piece Color: <input type="color" value="#ff8800"><br>
+                O Piece Color: <input type="color" value="#ffff00"><br>
+                S Piece Color: <input type="color" value="#00ff00"><br>
+                T Piece Color: <input type="color" value="#dd00dd"><br>
+                Z Piece Color: <input type="color" value="#ff0000"><br>
+                <br>
+            </div>
+        </div>
+        <script src="tetra.js"></script>
+    </body>
+</html>
