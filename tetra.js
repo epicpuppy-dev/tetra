@@ -11,10 +11,10 @@ var cellSize = 24;
 const debug = document.getElementById('debug');
 canvas.width = cellSize * 10 + 9;
 canvas.height = cellSize * 22 + 20;
-holdCanvas.width = cellSize * 4 + 3;
-holdCanvas.height = cellSize * 3 + 3;
-nextCanvas.width = cellSize * 4 + 3;
-nextCanvas.height = cellSize * 15 + 14;
+holdCanvas.width = cellSize * 4;
+holdCanvas.height = cellSize * 3;
+nextCanvas.width = cellSize * 4;
+nextCanvas.height = cellSize * 15;
 ctx.lineWidth = 1;
 colors = ["#000000", "#00ffff", "#0000ff", "#ff8800", "#ffff00", "#00ff00", "#dd00dd", "#ff0000", "#222222"];
 const G = {};
@@ -22,6 +22,8 @@ G.display = document.getElementById('score');
 G.level = 1;
 G.score = 0;
 G.lines = 0;
+G.btb = -1;
+G.tsanim = 0;
 G.nextLevel = 10;
 G.gravity = {};
 G.gravity.speed = fallSpeed(G.level);
@@ -204,6 +206,8 @@ class Piece {
         this.locked = false;
         this.rotation = 0;
         this.type = type;
+        this.mts = false;
+        this.tspin = false;
         switch (type) {
             case "I":
                 this.color = colors[1];
@@ -273,6 +277,8 @@ class Piece {
             if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, true);
         }
         //debug.innerHTML = JSON.stringify(`${mx}, ${my}, ${this.x}, ${this.y}, ${px + mx + this.x}, ${py + my + this.y}`);
+        this.mts = false;
+        this.tspin = false;
         return true;
     }
     remove () {
@@ -300,6 +306,132 @@ class Piece {
         }
         this.locked = true;
         G.ghost = null;
+        //clear lines
+        var lines = new Array(G.grid[0].length).fill(true);
+        for (var x = 0; x < G.grid.length; x++) {
+            for (var y = 0; y < G.grid[x].length; y++) {
+                if (!G.grid[x][y].solid || G.grid[x][y].moving) {
+                    lines[y] = false;
+                }
+            }
+        }
+        var cleared = 0;
+        for (var l = 0; l < lines.length; l++) {
+            if (lines[l]) cleared++;
+        }
+        G.lines += cleared;
+        G.nextLevel -= cleared;
+        var tspin = false;
+        var mts = false;
+        if (this.type == "T" && this.tspin) {
+            var corners = 0;
+            //debug.innerHTML = "";
+            for (const corner of [[0, 0], [2, 0], [2, 2], [0, 2]]) {
+                //debug.innerHTML += JSON.stringify(G.grid[this.x + corner[0]][this.y + corner[1]]) + ", ";
+                try {if (G.grid[this.x + corner[0]][this.y + corner[1]].solid) corners++} catch {};
+            }
+            if (corners >= 3) tspin = true;
+        }
+        if (this.type == "T" && !tspin && this.mts) {
+            mts = true;
+        }
+        if (G.nextLevel <= 0) {
+            G.nextLevel += 10;
+            G.level++;
+            G.gravity.speed = fallSpeed(G.level);
+        }
+        switch (cleared) {
+            case 4:
+                G.score += 800 * (G.level);
+                if (G.btb >= 0) {
+                    G.score += 400 * (G.level);
+                }
+                G.btb++;
+                break;
+            case 3:
+                G.score += 500 * (G.level);
+                if (tspin) {
+                    G.score += 1100 * (G.level);
+                    if (G.btb >= 0) {
+                        G.score += 800 * (G.level);
+                    }
+                    G.tsanim = 120;
+                    document.getElementById('tspin').innerHTML = "T-SPIN TRIPLE";
+                    G.btb++;
+                } else {
+                    G.btb = -1;
+                }
+                break;
+            case 2:
+                G.score += 300 * (G.level);
+                if (tspin) {
+                    G.score += 900 * (G.level);
+                    if (G.btb >= 0) {
+                        G.score += 600 * (G.level);
+                    }
+                    G.tsanim = 120;
+                    document.getElementById('tspin').innerHTML = "T-SPIN DOUBLE";
+                    G.btb++;
+                } else if (mts) {
+                    G.score += 100 * (G.level);
+                    if (G.btb >= 0) {
+                        G.score += 200 * (G.level);
+                    }
+                    G.tsanim = 90;
+                    document.getElementById('tspin').innerHTML = "T-SPIN DOUBLE MINI";
+                    G.btb++;
+                } else {
+                    G.btb = -1;
+                }
+                break;
+            case 1:
+                G.score += 100 * (G.level);
+                if (tspin) {
+                    G.score += 700 * (G.level);
+                    if (G.btb >= 0) {
+                        G.score += 400 * (G.level);
+                    }
+                    G.tsanim = 120;
+                    document.getElementById('tspin').innerHTML = "T-SPIN SINGLE";
+                    G.btb++;
+                } else if (mts) {
+                    G.score += 100 * (G.level);
+                    G.tsanim = 90;
+                    document.getElementById('tspin').innerHTML = "T-SPIN SINGLE MINI";
+                    G.btb++;
+                } else {
+                    G.btb = -1;
+                }
+                break;
+            default:
+                if (tspin) {
+                    G.score += 400 * (G.level);
+                    G.tsanim = 120;
+                    document.getElementById('tspin').innerHTML = "T-SPIN";
+                }
+                if (mts) {
+                    G.score += 100 * (G.level);
+                    G.tsanim = 90;
+                    document.getElementById('tspin').innerHTML = "T-SPIN MINI";
+                }
+        }
+        for (var x = 0; x < G.grid.length; x++) {
+            var line = lines.concat();
+            for (var y = 0; y < G.grid[x].length; y++) {
+                if (line[y]) {
+                    G.grid[x].splice(y, 1);
+                    G.grid[x].push(new Cell(false, "#000", false));
+                    line.splice(y, 1);
+                    y--;
+                }
+            }
+        }
+        if (G.btb > 0) {
+            document.getElementById("b2b").innerHTML = "B2B x" + G.btb;
+            document.getElementById("b2b").style.display = '';
+        } else {
+            document.getElementById("b2b").style.display = 'none';
+        }
     }
     rotate (rot) {
         var newRot = this.rotation + rot;
@@ -365,6 +497,10 @@ class Piece {
         for (var px = 0; px < this.footprint.length; px++) for (var py = 0; py < this.footprint[px].length; py++) {
             if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, true);
         }
+        this.tspin = true;
+        if (kickOffset[0] != 0 || kickOffset[1] != 0) {
+            this.mts = true;
+        }
         return true;
     }
 }
@@ -378,6 +514,7 @@ class Cell {
 }
 
 function fallSpeed(level) {
+    if (level > 29) return 1;
     return Math.ceil((0.8-((level-1)*-0.0024))**(level)*60);
 }
 
@@ -423,8 +560,14 @@ function main() {
                 G.key.das.left = G.key.das.speed;
             }
         }
-    } catch {}
-    checkLines();
+    } catch {};
+    if (G.level.toString().length < 2) levelDisplay = "0".repeat(2 - G.level.toString().length) + G.level;
+    else levelDisplay = G.level;
+    if (G.lines.toString().length < 4) lineDisplay = "0".repeat(4 - G.lines.toString().length) + G.lines;
+    else lineDisplay = G.line;
+    if (G.score.toString().length < 7) scoreDisplay = "0".repeat(7 - G.score.toString().length) + G.score;
+    else scoreDisplay = G.score;
+    G.display.innerHTML = `LEVEL ${levelDisplay} | LINES ${lineDisplay} | SCORE ${scoreDisplay}`;
     for (var x = 0; x < G.grid.length; x++) for (var y = 0; y < G.grid[x].length; y++) {
         ctx.fillStyle = G.grid[x][y].color;
         ctx.fillRect(x * (cellSize + 1), (G.grid[x].length - y - 19) * (cellSize + 1), cellSize, cellSize);
@@ -452,18 +595,29 @@ function main() {
     }
     G.gravity.fall--;
     if (G.gravity.fall <= 0) {
-        G.piece.move(0, -1);
+        if (G.piece.move(0, -1) && G.key.down.soft) G.score++;
         G.gravity.fall = G.gravity.speed;
-        if (G.key.down.soft) G.score++;
     }
     if (G.piece.onFloor()) {
         if (--G.gravity.lock <= 0) {
-            G.piece.lock();
+            try {
+                G.piece.lock();
+            } catch (err) {
+                debug.innerHTML = err.stack;
+            }
             G.piece = null;
         }
     } else {
         G.gravity.lock = 60;
     }
+    G.tsanim--;
+    if (G.tsanim > 60) {
+        document.getElementById('tspin').style.opacity = 1;
+    }
+    if (G.tsanim <= 60) {
+        document.getElementById('tspin').style.opacity = G.tsanim / 60;
+    }
+    debug.innerHTML = `${G.piece.type}, ${G.piece.tspin}, ${G.piece.mts}`;
 }
 
 function newGame() {
@@ -480,6 +634,9 @@ function newGame() {
     };
     G.score = 0;
     G.lines = 0;
+    G.btb = 0;
+    G.tsanim = 0;
+    document.getElementById("b2b").style.display = '';
     G.nextLevel = Math.min(G.level * 10 + 10, Math.max(100, G.level * 10 - 50));
     G.piece = null;
     G.ghost = null;
@@ -507,53 +664,6 @@ function newGame() {
     G.display.innerHTML = `LEVEL ${G.level} | LINES 0000 | SCORE 0000000`;
 }
 
-function checkLines() {
-    var lines = new Array(G.grid[0].length).fill(true);
-    for (var x = 0; x < G.grid.length; x++) {
-        for (var y = 0; y < G.grid[x].length; y++) {
-            if (!G.grid[x][y].solid || G.grid[x][y].moving) {
-                lines[y] = false;
-            }
-        }
-    }
-    var cleared = 0;
-    for (var l = 0; l < lines.length; l++) {
-        if (lines[l]) cleared++;
-    }
-    for (var x = 0; x < G.grid.length; x++) {
-        var line = lines.concat();
-        for (var y = 0; y < G.grid[x].length; y++) {
-            if (line[y]) {
-                G.grid[x].splice(y, 1);
-                G.grid[x].push(new Cell(false, "#000", false));
-                line.splice(y, 1);
-                y--;
-            }
-        }
-    }
-    G.lines += cleared;
-    G.nextLevel -= cleared;
-    if (G.nextLevel <= 0) {
-        G.nextLevel += 10;
-        G.level++;
-        G.gravity.speed = fallSpeed(G.level);
-    }
-    switch (cleared) {
-        case 4:
-            G.score += 300 * (G.level);
-        case 3:
-            G.score += 200 * (G.level);
-        case 2:
-            G.score += 200 * (G.level);
-        case 1:
-            G.score += 100 * (G.level);
-            break;
-    }
-    var lineDisplay = "0".repeat(4 - G.lines.toString().length) + G.lines;
-    var scoreDisplay = "0".repeat(7 - G.score.toString().length) + G.score;
-    G.display.innerHTML = `LEVEL ${G.level} | LINES ${lineDisplay} | SCORE ${scoreDisplay}`;
-}
-
 function drawNext() {
     //update next display
     nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
@@ -574,10 +684,10 @@ function updateSettings() {
     cellSize = blockSize;
     canvas.width = cellSize * 10 + 9;
     canvas.height = cellSize * 22 + 20;
-    holdCanvas.width = cellSize * 4 + 3;
-    holdCanvas.height = cellSize * 4 + 3;
-    nextCanvas.width = cellSize * 4 + 3;
-    nextCanvas.height = cellSize * 15 + 14;
+    holdCanvas.width = cellSize * 4;
+    holdCanvas.height = cellSize * 4;
+    nextCanvas.width = cellSize * 4;
+    nextCanvas.height = cellSize * 15;
     var dasDelay = parseInt(document.getElementById('das-delay').value);
     G.key.das.delay = dasDelay;
     var dasSpeed = parseInt(document.getElementById('das-speed').value);
