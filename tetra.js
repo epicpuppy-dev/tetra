@@ -34,7 +34,7 @@ G.gravity.are = 60;
 G.bind = null;
 G.hold = null;
 G.holdable = true;
-G.firstHold = true;
+G.firstHold = 2;
 G.img = new Image();
 G.img.src = 'img.png';
 G.img.onload = setInterval(main, 1000/60);
@@ -601,15 +601,16 @@ function main() {
         }
     }
     drawGrid();
+    debug.innerHTML = G.firstHold;
     if (G.piece == null) {
         if (--G.gravity.are <= 0) {
             var piece = Math.floor(Math.random() * G.bag.length);
             G.piece = new Piece(G.next.shift(), false);
             G.next.push(G.bag[piece]);
-            if (!G.firstHold) {
-                G.holdable = true;
+            if (G.firstHold) {
+                G.firstHold--;
             } else {
-                G.firstHold = false;
+                G.holdable = true;
             }
             G.gravity.fall = 0;
             G.bag.splice(piece, 1);
@@ -664,11 +665,12 @@ function newGame() {
     G.lines = 0;
     G.btb = 0;
     G.tsanim = 0;
-    document.getElementById("b2b").style.display = '';
+    document.getElementById("b2b").style.display = 'none';
     G.nextLevel = Math.min(G.level * 10 + 10, Math.max(100, G.level * 10 - 50));
     G.piece = null;
     G.ghost = null;
-    G.firstHold = true;
+    G.firstHold = 2;
+    G.holdable = true;
     G.hold = null;
     G.bag = ["I", "J", "L", "O", "S", "T", "Z"];
     G.next = [];
@@ -778,9 +780,8 @@ document.addEventListener('keydown', (e) => {
         holdStartTop = (3 - G.pieces[G.hold].height) / 2;
         holdCtx.fillStyle = G.pieces[G.hold].color;
         for (var x = 0; x < G.pieces[G.hold].width; x++) for(var y = 0; y < G.pieces[G.hold].height; y++) {
-            if (G.pieces[G.hold].shape[x][y] != " ") holdCtx.fillRect((holdStartLeft + x) * cellSize, (holdStartTop + (G.pieces[G.hold].height - y - 1)) * cellSize, cellSize, cellSize);
+            if (G.pieces[G.hold].shape[x][y] != " ") holdCtx.drawImage(G.img, G.atlas[G.hold][0], G.atlas[G.hold][1], 24, 24, (holdStartLeft + x) * cellSize, (holdStartTop + (G.pieces[G.hold].height - y - 1)) * cellSize, cellSize, cellSize);
         }
-        debug.innerHTML = `${holdStartLeft}, ${holdStartBottom}, ${JSON.stringify(G.pieces[G.hold])}`;
         G.holdable = false;
     }
     try {
