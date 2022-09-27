@@ -16,7 +16,8 @@ holdCanvas.height = cellSize * 3;
 nextCanvas.width = cellSize * 4;
 nextCanvas.height = cellSize * 15;
 ctx.lineWidth = 1;
-colors = ["#000000", "#00ffff", "#0000ff", "#ff8800", "#ffff00", "#00ff00", "#dd00dd", "#ff0000", "#222222"];
+//BACKGROUND, I, J, L, O, S, T, Z, GRID, PAGE BG, BORDER
+colors = ["#000000", "#00ffff", "#0000ff", "#ff8800", "#ffff00", "#00ff00", "#dd00dd", "#ff0000", "#222222", "#000000", "#555555"];
 const G = {};
 G.display = document.getElementById('score');
 G.level = 1;
@@ -34,6 +35,18 @@ G.bind = null;
 G.hold = null;
 G.holdable = true;
 G.firstHold = true;
+G.img = new Image();
+G.img.src = 'img.png';
+G.img.onload = setInterval(main, 1000/60);
+G.atlas = {
+    I: [0, 0],
+    J: [24, 0],
+    L: [48, 0],
+    O: [72, 0],
+    S: [0, 24],
+    T: [24, 24],
+    Z: [48, 24]
+}
 G.pieces = {
     I: {
         width: 4,
@@ -200,7 +213,7 @@ G.piece = null;
 G.ghost = null;
 
 class Piece {
-    constructor (type) {
+    constructor (type, ghost) {
         this.x = 3;
         this.y = 20;
         this.locked = false;
@@ -208,6 +221,7 @@ class Piece {
         this.type = type;
         this.mts = false;
         this.tspin = false;
+        this.ghost = ghost;
         switch (type) {
             case "I":
                 this.color = colors[1];
@@ -240,7 +254,7 @@ class Piece {
                 break;
         }
         for (var x = 0; x < this.footprint.length; x++) for (var y = 0; y < this.footprint[x].length; y++) {
-            if (this.footprint[x][y] != " ") G.grid[this.x + x][this.y + y] = new Cell(true, this.color, true);
+            if (this.footprint[x][y] != " ") G.grid[this.x + x][this.y + y] = new Cell(true, this.color, true, this.type, this.ghost);
         }
     }
     move (mx, my) {
@@ -259,14 +273,14 @@ class Piece {
         }
         //remove footprint from grid
         for (var px = 0; px < this.footprint.length; px++) for (var py = 0; py < this.footprint[px].length; py++) {
-            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(false, "#000", false);
+            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(false, "#000", false, null, false);
         }
         //move piece position
         this.x += mx;
         this.y += my;
         //add footprint to new position
         if (this !== G.ghost) {
-            if (G.ghost === null) G.ghost = new Piece(this.type);
+            if (G.ghost === null) G.ghost = new Piece(this.type, true);
             G.ghost.color = this.color + "55";
             G.ghost.move(this.x - G.ghost.x, this.y - G.ghost.y);
             while (!G.ghost.onFloor()) {
@@ -274,7 +288,7 @@ class Piece {
             }
         }
         for (var px = 0; px < this.footprint.length; px++) for (var py = 0; py < this.footprint[px].length; py++) {
-            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, true);
+            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, true, this.type, this.ghost);
         }
         //debug.innerHTML = JSON.stringify(`${mx}, ${my}, ${this.x}, ${this.y}, ${px + mx + this.x}, ${py + my + this.y}`);
         this.mts = false;
@@ -284,7 +298,7 @@ class Piece {
     remove () {
         //remove footprint from grid
         for (var px = 0; px < this.footprint.length; px++) for (var py = 0; py < this.footprint[px].length; py++) {
-            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(false, "#000", false);
+            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(false, "#000", false, null, false);
         }
     }
     onFloor () {
@@ -302,7 +316,7 @@ class Piece {
     lock () {
         //add static footprint to current position
         for (var px = 0; px < this.footprint.length; px++) for (var py = 0; py < this.footprint[px].length; py++) {
-            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, false);
+            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, false, this.type, this.ghost);
         }
         this.locked = true;
         G.ghost = null;
@@ -420,7 +434,7 @@ class Piece {
             for (var y = 0; y < G.grid[x].length; y++) {
                 if (line[y]) {
                     G.grid[x].splice(y, 1);
-                    G.grid[x].push(new Cell(false, "#000", false));
+                    G.grid[x].push(new Cell(false, "#000", false, null, false));
                     line.splice(y, 1);
                     y--;
                 }
@@ -477,7 +491,7 @@ class Piece {
         //debug.innerHTML = `${this.x}, ${this.y}, ${JSON.stringify(this.footprint)}`;
         //remove footprint from grid
         for (var px = 0; px < this.footprint.length; px++) for (var py = 0; py < this.footprint[px].length; py++) {
-            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(false, "#000", false);
+            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(false, "#000", false, null, false);
         }
         //rotate
         this.rotation = newRot;
@@ -485,7 +499,7 @@ class Piece {
         this.x += kickOffset[0];
         this.y += kickOffset[1];
         if (this !== G.ghost) {
-            if (G.ghost === null) G.ghost = new Piece(this.type);
+            if (G.ghost === null) G.ghost = new Piece(this.type, true);
             G.ghost.color = this.color + "55";
             G.ghost.move(this.x - G.ghost.x, this.y - G.ghost.y);
             G.ghost.rotate(rot);
@@ -495,7 +509,7 @@ class Piece {
         }
         //add footprint to new position
         for (var px = 0; px < this.footprint.length; px++) for (var py = 0; py < this.footprint[px].length; py++) {
-            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, true);
+            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, true, this.type, this.ghost);
         }
         this.tspin = true;
         if (kickOffset[0] != 0 || kickOffset[1] != 0) {
@@ -506,10 +520,12 @@ class Piece {
 }
 
 class Cell {
-    constructor (solid, color, moving) {
+    constructor (solid, color, moving, type, ghost) {
         this.solid = solid;
         this.color = color;
         this.moving = moving;
+        this.type = type;
+        this.ghost = ghost;
     }
 }
 
@@ -523,7 +539,7 @@ G.grid = new Array(10);
 for (var x = 0; x < G.grid.length; x++) {
     G.grid[x] = new Array(40);
     for (var y = 0; y < G.grid[x].length; y++) {
-        G.grid[x][y] = new Cell(false, "#000", false);
+        G.grid[x][y] = new Cell(false, "#000", false, null, false);
     }
 }
 
@@ -570,13 +586,25 @@ function main() {
     G.display.innerHTML = `LEVEL ${levelDisplay} | LINES ${lineDisplay} | SCORE ${scoreDisplay}`;
     for (var x = 0; x < G.grid.length; x++) for (var y = 0; y < G.grid[x].length; y++) {
         ctx.fillStyle = G.grid[x][y].color;
-        ctx.fillRect(x * (cellSize + 1), (G.grid[x].length - y - 19) * (cellSize + 1), cellSize, cellSize);
+        if (G.grid[x][y].solid) {
+            try {
+                if (G.grid[x][y].ghost) {
+                    ctx.globalAlpha = 0.3;
+                }
+                ctx.drawImage(G.img, G.atlas[G.grid[x][y].type][0], G.atlas[G.grid[x][y].type][1], 24, 24, x * (cellSize + 1), (G.grid[x].length - y - 19) * (cellSize + 1), cellSize, cellSize);
+                ctx.globalAlpha = 1;
+            } catch (err) {
+                debug.innerHTML = err.stack;
+            }
+        } else {
+            ctx.fillRect(x * (cellSize + 1), (G.grid[x].length - y - 19) * (cellSize + 1), cellSize, cellSize);
+        }
     }
     drawGrid();
     if (G.piece == null) {
         if (--G.gravity.are <= 0) {
             var piece = Math.floor(Math.random() * G.bag.length);
-            G.piece = new Piece(G.next.shift());
+            G.piece = new Piece(G.next.shift(), false);
             G.next.push(G.bag[piece]);
             if (!G.firstHold) {
                 G.holdable = true;
@@ -603,7 +631,7 @@ function main() {
             try {
                 G.piece.lock();
             } catch (err) {
-                debug.innerHTML = err.stack;
+                //debug.innerHTML = err.stack;
             }
             G.piece = null;
         }
@@ -617,7 +645,7 @@ function main() {
     if (G.tsanim <= 60) {
         document.getElementById('tspin').style.opacity = G.tsanim / 60;
     }
-    debug.innerHTML = `${G.piece.type}, ${G.piece.tspin}, ${G.piece.mts}`;
+    //debug.innerHTML = `${G.piece.type}, ${G.piece.tspin}, ${G.piece.mts}`;
 }
 
 function newGame() {
@@ -658,7 +686,7 @@ function newGame() {
     for (var x = 0; x < G.grid.length; x++) {
         G.grid[x] = new Array(40);
         for (var y = 0; y < G.grid[x].length; y++) {
-            G.grid[x][y] = new Cell(false, "#000", false);
+            G.grid[x][y] = new Cell(false, "#000", false, null, false);
         }
     }
     G.display.innerHTML = `LEVEL ${G.level} | LINES 0000 | SCORE 0000000`;
@@ -672,27 +700,18 @@ function drawNext() {
         nextStartTop = (3 - G.pieces[G.next[n]].height) / 2;
         nextCtx.fillStyle = G.pieces[G.next[n]].color;
         for (var x = 0; x < G.pieces[G.next[n]].width; x++) for(var y = 0; y < G.pieces[G.next[n]].height; y++) {
-            if (G.pieces[G.next[n]].shape[x][y] != " ") nextCtx.fillRect((nextStartLeft + x) * cellSize, (nextStartTop + (G.pieces[G.next[n]].height - y - 1 + (n * 3))) * cellSize, cellSize, cellSize);
+            if (G.pieces[G.next[n]].shape[x][y] != " ") nextCtx.drawImage(G.img, G.atlas[G.next[n]][0], G.atlas[G.next[n]][1], cellSize, cellSize, (nextStartLeft + x) * cellSize, (nextStartTop + (G.pieces[G.next[n]].height - y - 1 + (n * 3))) * cellSize, cellSize, cellSize);
         }
     }
 }
 
-setInterval(main, 1000/60);
-
 function updateSettings() {
-    var blockSize = parseInt(document.getElementById('cell-size').value);
-    cellSize = blockSize;
-    canvas.width = cellSize * 10 + 9;
-    canvas.height = cellSize * 22 + 20;
-    holdCanvas.width = cellSize * 4;
-    holdCanvas.height = cellSize * 4;
-    nextCanvas.width = cellSize * 4;
-    nextCanvas.height = cellSize * 15;
     var dasDelay = parseInt(document.getElementById('das-delay').value);
     G.key.das.delay = dasDelay;
     var dasSpeed = parseInt(document.getElementById('das-speed').value);
     G.key.das.speed = dasSpeed;
     window.localStorage.setItem("bindings", JSON.stringify(G.key.bindings));
+    window.localStorage.setItem("das", JSON.stringify(G.key.das));
 }
 
 function rebind(key) {
@@ -747,7 +766,7 @@ document.addEventListener('keydown', (e) => {
         G.ghost.remove();
         G.ghost = null;
         if (newPiece !== null) {
-            G.piece = new Piece(newPiece);
+            G.piece = new Piece(newPiece, false);
             G.gravity.fall = 0;
         } else {
             G.piece = null;
