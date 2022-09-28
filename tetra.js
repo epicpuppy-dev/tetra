@@ -9,13 +9,13 @@ const holdCtx = holdCanvas.getContext('2d');
 const nextCtx = nextCanvas.getContext('2d');
 var cellSize = 24;
 const debug = document.getElementById('debug');
-canvas.width = cellSize * 10 + 9;
-canvas.height = cellSize * 22 + 20;
+canvas.width = cellSize * 10;
+canvas.height = cellSize * 22;
 holdCanvas.width = cellSize * 4;
 holdCanvas.height = cellSize * 3;
 nextCanvas.width = cellSize * 4;
 nextCanvas.height = cellSize * 15;
-ctx.lineWidth = 1;
+ctx.lineWidth = 2;
 //BACKGROUND, I, J, L, O, S, T, Z, GRID, PAGE BG, BORDER
 colors = ["#000000", "#00ffff", "#0000ff", "#ff8800", "#ffff00", "#00ff00", "#dd00dd", "#ff0000", "#222222", "#000000", "#555555"];
 const G = {};
@@ -24,6 +24,7 @@ G.level = 1;
 G.score = 0;
 G.lines = 0;
 G.btb = -1;
+G.lose = false;
 G.tsanim = 0;
 G.nextLevel = 10;
 G.gravity = {};
@@ -252,6 +253,9 @@ class Piece {
                 this.color = colors[7];
                 this.footprint = ["  z "," zz "," z  ","    "];
                 break;
+        }
+        for (var x = 0; x < this.footprint.length; x++) for (var y = 0; y < this.footprint[x].length; y++) {
+            if (this.footprint[x][y] != " ") if (G.grid[this.x + x][this.y + y].solid) lose = true;
         }
         for (var x = 0; x < this.footprint.length; x++) for (var y = 0; y < this.footprint[x].length; y++) {
             if (this.footprint[x][y] != " ") G.grid[this.x + x][this.y + y] = new Cell(true, this.color, true, this.type, this.ghost);
@@ -545,25 +549,25 @@ for (var x = 0; x < G.grid.length; x++) {
 
 function drawGrid() {
     ctx.strokeStyle = colors[8];
-    for (var x = -0.5; x < canvas.width; x += cellSize + 1) {
+    for (var x = 0; x < canvas.width; x += cellSize) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, canvas.height);
         ctx.stroke();
     }
-    for (var y = -0.5; y < canvas.height; y += cellSize + 1) {
+    for (var y = 0; y < canvas.height; y += cellSize) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(canvas.width, y);
         ctx.stroke();
     }
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.strokeStyle = '#555';
     ctx.beginPath();
-    ctx.moveTo(0, -0.5 + cellSize * 2 + 2);
-    ctx.lineTo(canvas.width, -0.5 + cellSize * 2 + 2);
+    ctx.moveTo(0, 0 + cellSize * 2);
+    ctx.lineTo(canvas.width, cellSize * 2);
     ctx.stroke();
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 2;
 }
 function main() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -584,24 +588,22 @@ function main() {
     if (G.score.toString().length < 7) scoreDisplay = "0".repeat(7 - G.score.toString().length) + G.score;
     else scoreDisplay = G.score;
     G.display.innerHTML = `LEVEL ${levelDisplay} | LINES ${lineDisplay} | SCORE ${scoreDisplay}`;
+    drawGrid();
     for (var x = 0; x < G.grid.length; x++) for (var y = 0; y < G.grid[x].length; y++) {
         ctx.fillStyle = G.grid[x][y].color;
         if (G.grid[x][y].solid) {
             try {
                 if (G.grid[x][y].ghost) {
-                    ctx.globalAlpha = 0.3;
+                    ctx.globalAlpha = 0.5;
                 }
-                ctx.drawImage(G.img, G.atlas[G.grid[x][y].type][0], G.atlas[G.grid[x][y].type][1], 24, 24, x * (cellSize + 1), (G.grid[x].length - y - 19) * (cellSize + 1), cellSize, cellSize);
+                ctx.drawImage(G.img, G.atlas[G.grid[x][y].type][0], G.atlas[G.grid[x][y].type][1], 24, 24, x * (cellSize), (G.grid[x].length - y - 19) * (cellSize), cellSize, cellSize);
                 ctx.globalAlpha = 1;
             } catch (err) {
-                debug.innerHTML = err.stack;
+                //debug.innerHTML = err.stack;
             }
-        } else {
-            ctx.fillRect(x * (cellSize + 1), (G.grid[x].length - y - 19) * (cellSize + 1), cellSize, cellSize);
         }
     }
-    drawGrid();
-    debug.innerHTML = G.firstHold;
+    //debug.innerHTML = G.firstHold;
     if (G.piece == null) {
         if (--G.gravity.are <= 0) {
             var piece = Math.floor(Math.random() * G.bag.length);
@@ -617,6 +619,7 @@ function main() {
             if (G.bag.length == 0) {
                 G.bag = ["I", "J", "L", "O", "S", "T", "Z"];
             }
+            G.gravity.lock = 60;
             drawNext();
         }
     } else {
@@ -656,6 +659,7 @@ function newGame() {
     G.gravity.fall = G.gravity.speed;
     G.gravity.lock = 60;
     G.gravity.are = 60;
+    G.lose = false;
     G.key.down = {
         left: false,
         right: false,
