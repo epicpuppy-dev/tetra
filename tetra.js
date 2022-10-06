@@ -26,6 +26,7 @@ G.lines = 0;
 G.btb = -1;
 G.lose = false;
 G.tsanim = 0;
+G.pcanim = 0;
 G.nextLevel = 10;
 G.gravity = {};
 G.gravity.speed = fallSpeed(G.level);
@@ -444,12 +445,29 @@ class Piece {
                 }
             }
         }
+        var pc = true;
+        for (var px = 0; px < G.grid.length; px++) for (var py = 0; py < G.grid[px].length; py++) {
+            if (G.grid[px][py].solid) {
+                pc = false;
+                debug.innerHTML = `${px}, ${py}`;
+                break;
+            }
+        }
+        if (pc) {
+            debug.innerHTML = `yoy`;
+            G.pcanim = 200;
+            G.score += 2000 * G.level;
+            if (G.btb > 0) {
+                G.score += 2000 * G.level;
+            }
+        }
         if (G.btb > 0) {
             document.getElementById("b2b").innerHTML = "B2B x" + G.btb;
             document.getElementById("b2b").style.display = '';
         } else {
             document.getElementById("b2b").style.display = 'none';
         }
+
     }
     rotate (rot) {
         var newRot = this.rotation + rot;
@@ -648,6 +666,13 @@ function main() {
     }
     if (G.tsanim <= 60) {
         document.getElementById('tspin').style.opacity = G.tsanim / 60;
+    }
+    G.pcanim--;
+    if (G.pcanim > 100) {
+        document.getElementById('pc').style.opacity = 1;
+    }
+    if (G.pcanim <= 100) {
+        document.getElementById('pc').style.opacity = G.pcanim / 100;
     }
     //debug.innerHTML = `${G.piece.type}, ${G.piece.tspin}, ${G.piece.mts}`;
 }
