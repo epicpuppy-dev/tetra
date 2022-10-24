@@ -699,7 +699,7 @@ function main() {
             drawNext();
         }
     } else {
-        if (G.mode != 1) G.gravity.are = 60 / (G.level);
+        if (G.mode != 1) G.gravity.are = 60 / (G.level + 1);
     }
     G.gravity.fall--;
     if (G.gravity.fall <= 0) {
