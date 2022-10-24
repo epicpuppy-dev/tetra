@@ -10,6 +10,10 @@
             <div id="hold-container">
                 <h3 id="hold">HOLD</h3>
                 <canvas id="hold-canvas" width="100" height="200"></canvas>
+                <h4 id="pcs">Pieces: 0</h4>
+                <h4 id="pps">PPS: 0.00/s</h4>
+                <h4 id="apm">APM: 0.0/m</h4>
+                <h4 id="sps">SPS: 0.00/s</h4>
                 <h3 id="b2b" style="display: none">B2B x0</h3>
                 <h3 id="tspin" style="opacity: 0">T-SPIN</h3>
                 <h3 id="pc" style="opacity: 0">PERFECT CLEAR</h3>
@@ -22,8 +26,14 @@
                 <h3 style="opacity: 0">T-SPIN DOUBLE MINI</h3>
             </div>
         </div><br>
-        <p id="debug">DEBUG</p>
-        Starting Level: <input id="start-level" type="number" max="29" value="1"><br>
+        <p>V0.2.0</p>
+        <p id="debug" style="display:none">DEBUG</p>
+        Starting Level: <input id="start-level" type="number" max="29" value="0"><br>
+        Mode: <select id="mode">
+            <option value="0">Modern</option>
+            <option value="1">Classic</option>
+            <option value="2">Zen</option>
+        </select><br>
         <button onclick="newGame()">NEW GAME</button>
         <h2>Settings</h2>
         <button onclick="updateSettings()">APPLY & SAVE</button><br>

@@ -20,7 +20,8 @@ ctx.lineWidth = 2;
 colors = ["#000000", "#00ffff", "#0000ff", "#ff8800", "#ffff00", "#00ff00", "#dd00dd", "#ff0000", "#222222", "#000000", "#555555"];
 const G = {};
 G.display = document.getElementById('score');
-G.level = 1;
+G.level = 0;
+G.mode = 0;
 G.score = 0;
 G.lines = 0;
 G.btb = -1;
@@ -178,7 +179,7 @@ G.next = [];
 for (var i = 0; i < 5; i++) {
     var piece = Math.floor(Math.random() * G.bag.length);
     G.next.push(G.bag[piece]);
-    G.bag.splice(piece, 1);
+    if (G.mode != 1) G.bag.splice(piece, 1);
     if (G.bag.length == 0) {
         G.bag = ["I", "J", "L", "O", "S", "T", "Z"];
     }
@@ -213,6 +214,12 @@ G.key.down = {
 };
 G.piece = null;
 G.ghost = null;
+
+G.stats = {};
+G.stats.pieces = [0];
+G.stats.actions = [0];
+G.stats.score = [0];
+G.stats.totalpieces = 0;
 
 class Piece {
     constructor (type, ghost) {
@@ -284,7 +291,7 @@ class Piece {
         this.x += mx;
         this.y += my;
         //add footprint to new position
-        if (this !== G.ghost) {
+        if (this !== G.ghost && G.mode != 1) {
             if (G.ghost === null) G.ghost = new Piece(this.type, true);
             G.ghost.color = this.color + "55";
             G.ghost.move(this.x - G.ghost.x, this.y - G.ghost.y);
@@ -354,25 +361,30 @@ class Piece {
         if (this.type == "T" && !tspin && this.mts) {
             mts = true;
         }
-        if (G.nextLevel <= 0) {
+        if (G.nextLevel <= 0 && G.mode == 0) {
             G.nextLevel += 10;
             G.level++;
             G.gravity.speed = fallSpeed(G.level);
         }
-        switch (cleared) {
+        if (G.mode != 1) switch (cleared) {
             case 4:
-                G.score += 800 * (G.level);
+                G.score += 800 * (G.level + 1);
+                G.stats.score[G.stats.pieces.length - 1] += 800 * (G.level + 1);
                 if (G.btb >= 0) {
-                    G.score += 400 * (G.level);
+                    G.score += 400 * (G.level + 1);
+                    G.stats.score[G.stats.pieces.length - 1] += 400 * (G.level + 1);
                 }
                 G.btb++;
                 break;
             case 3:
-                G.score += 500 * (G.level);
+                G.score += 500 * (G.level + 1);
+                G.stats.score[G.stats.pieces.length - 1] += 500 * (G.level + 1);
                 if (tspin) {
-                    G.score += 1100 * (G.level);
+                    G.score += 1100 * (G.level + 1);
+                    G.stats.score[G.stats.pieces.length - 1] += 1100 * (G.level + 1);
                     if (G.btb >= 0) {
-                        G.score += 800 * (G.level);
+                        G.score += 800 * (G.level + 1);
+                        G.stats.score[G.stats.pieces.length - 1] += 800 * (G.level + 1);
                     }
                     G.tsanim = 120;
                     document.getElementById('tspin').innerHTML = "T-SPIN TRIPLE";
@@ -382,41 +394,50 @@ class Piece {
                 }
                 break;
             case 2:
-                G.score += 300 * (G.level);
+                G.score += 300 * (G.level + 1);
+                G.stats.score[G.stats.pieces.length - 1] += 300 * (G.level + 1);
                 if (tspin) {
-                    G.score += 900 * (G.level);
+                    G.score += 900 * (G.level + 1);
+                    G.stats.score[G.stats.pieces.length - 1] += 900 * (G.level + 1);
                     if (G.btb >= 0) {
-                        G.score += 600 * (G.level);
+                        G.score += 600 * (G.level + 1);
+                        G.stats.score[G.stats.pieces.length - 1] += 600 * (G.level + 1);
                     }
                     G.tsanim = 120;
                     document.getElementById('tspin').innerHTML = "T-SPIN DOUBLE";
                     G.btb++;
                 } else if (mts) {
-                    G.score += 100 * (G.level);
+                    G.score += 100 * (G.level + 1);
+                    G.stats.score[G.stats.pieces.length - 1] += 100 * (G.level + 1);
                     if (G.btb >= 0) {
-                        G.score += 200 * (G.level);
+                        G.score += 200 * (G.level + 1);
+                        G.stats.score[G.stats.pieces.length - 1] += 200 * (G.level + 1);
                     }
                     G.tsanim = 90;
-                    document.getElementById('tspin').innerHTML = "T-SPIN DOUBLE MINI";
+                    document.getElementById('tspin').innerHTML = "MINI T-SPIN DOUBLE";
                     G.btb++;
                 } else {
                     G.btb = -1;
                 }
                 break;
             case 1:
-                G.score += 100 * (G.level);
+                G.score += 100 * (G.level + 1);
+                G.stats.score[G.stats.pieces.length - 1] += 100 * (G.level + 1);
                 if (tspin) {
-                    G.score += 700 * (G.level);
+                    G.score += 700 * (G.level + 1);
+                    G.stats.score[G.stats.pieces.length - 1] += 700 * (G.level + 1);
                     if (G.btb >= 0) {
-                        G.score += 400 * (G.level);
+                        G.score += 400 * (G.level + 1);
+                        G.stats.score[G.stats.pieces.length - 1] += 400 * (G.level + 1);
                     }
                     G.tsanim = 120;
                     document.getElementById('tspin').innerHTML = "T-SPIN SINGLE";
                     G.btb++;
                 } else if (mts) {
-                    G.score += 100 * (G.level);
+                    G.score += 100 * (G.level + 1);
+                    G.stats.score[G.stats.pieces.length - 1] += 100 * (G.level + 1);
                     G.tsanim = 90;
-                    document.getElementById('tspin').innerHTML = "T-SPIN SINGLE MINI";
+                    document.getElementById('tspin').innerHTML = "MINI T-SPIN SINGLE";
                     G.btb++;
                 } else {
                     G.btb = -1;
@@ -424,15 +445,39 @@ class Piece {
                 break;
             default:
                 if (tspin) {
-                    G.score += 400 * (G.level);
+                    G.score += 400 * (G.level + 1);
+                    G.stats.score[G.stats.pieces.length - 1] += 400 * (G.level + 1);
                     G.tsanim = 120;
                     document.getElementById('tspin').innerHTML = "T-SPIN";
                 }
                 if (mts) {
-                    G.score += 100 * (G.level);
+                    G.score += 100 * (G.level + 1);
+                    G.stats.score[G.stats.pieces.length - 1] += 100 * (G.level + 1);
                     G.tsanim = 90;
-                    document.getElementById('tspin').innerHTML = "T-SPIN MINI";
+                    document.getElementById('tspin').innerHTML = "MINI T-SPIN";
                 }
+        }
+        if (G.mode == 1) {
+            G.gravity.are = 10 + Math.floor(this.y / 4) * 2;
+            switch (cleared) {
+                case 1:
+                    G.score += 40 * (G.level + 1);
+                    G.stats.score[G.stats.pieces.length - 1] += 40 * (G.level + 1);
+                    break;
+                case 2:
+                    G.score += 100 * (G.level + 1);
+                    G.stats.score[G.stats.pieces.length - 1] += 100 * (G.level + 1);
+                    break;
+                case 3:
+                    G.score += 300 * (G.level + 1);
+                    G.stats.score[G.stats.pieces.length - 1] += 300 * (G.level + 1);
+                    break;
+                case 4:
+                    G.score += 1200 * (G.level + 1);
+                    G.stats.score[G.stats.pieces.length - 1] += 1200 * (G.level + 1);
+                    break;
+            }
+            if (cleared > 0) G.gravity.are += 20;
         }
         for (var x = 0; x < G.grid.length; x++) {
             var line = lines.concat();
@@ -449,18 +494,22 @@ class Piece {
         for (var px = 0; px < G.grid.length; px++) for (var py = 0; py < G.grid[px].length; py++) {
             if (G.grid[px][py].solid) {
                 pc = false;
-                debug.innerHTML = `${px}, ${py}`;
+                //debug.innerHTML = `${px}, ${py}`;
                 break;
             }
         }
         if (pc) {
-            debug.innerHTML = `yoy`;
+            //debug.innerHTML = `yoy`;
             G.pcanim = 200;
-            G.score += 2000 * G.level;
+            G.score += 2000 * (G.level + 1);
+            G.stats.score[G.stats.pieces.length - 1] += 2000 * (G.level + 1);
             if (G.btb > 0) {
-                G.score += 2000 * G.level;
+                G.score += 2000 * (G.level + 1);
+                G.stats.score[G.stats.pieces.length - 1] += 2000 * (G.level + 1);
             }
         }
+        G.stats.pieces[G.stats.pieces.length - 1]++;
+        G.stats.totalpieces++;
         if (G.btb > 0) {
             document.getElementById("b2b").innerHTML = "B2B x" + G.btb;
             document.getElementById("b2b").style.display = '';
@@ -501,9 +550,11 @@ class Piece {
                     break;
                 }
             }
-            if (!test) {
-                continue;
+            if (G.mode == 1) {
+                if (test) valid = true;
+                break;
             }
+            if (!test) continue;
             valid = true;
             break;
         }
@@ -520,7 +571,7 @@ class Piece {
         this.footprint = G.srs[this.type][newRot];
         this.x += kickOffset[0];
         this.y += kickOffset[1];
-        if (this !== G.ghost) {
+        if (this !== G.ghost && G.mode != 1) {
             if (G.ghost === null) G.ghost = new Piece(this.type, true);
             G.ghost.color = this.color + "55";
             G.ghost.move(this.x - G.ghost.x, this.y - G.ghost.y);
@@ -589,6 +640,12 @@ function drawGrid() {
 }
 function main() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    G.stats.actions.push(0);
+    G.stats.pieces.push(0);
+    G.stats.score.push(0);
+    /*if (G.stats.actions.length > 1800) G.stats.actions.shift();
+    if (G.stats.pieces.length > 1800) G.stats.pieces.shift();
+    if (G.stats.score.length > 1800) G.stats.score.shift();*/
     try {
         if (G.key.down.left || G.key.down.right) {
             G.key.das.left--;
@@ -637,11 +694,12 @@ function main() {
             if (G.bag.length == 0) {
                 G.bag = ["I", "J", "L", "O", "S", "T", "Z"];
             }
-            G.gravity.lock = 60;
+            if (G.mode != 1) G.gravity.lock = 60;
+            else G.gravity.lock = 0;
             drawNext();
         }
     } else {
-        G.gravity.are = 60 / (G.level);
+        if (G.mode != 1) G.gravity.are = 60 / (G.level);
     }
     G.gravity.fall--;
     if (G.gravity.fall <= 0) {
@@ -658,7 +716,8 @@ function main() {
             G.piece = null;
         }
     } else {
-        G.gravity.lock = 60;
+        if (G.mode != 1) G.gravity.lock = 60;
+        else G.gravity.lock = 5;
     }
     G.tsanim--;
     if (G.tsanim > 60) {
@@ -674,7 +733,11 @@ function main() {
     if (G.pcanim <= 100) {
         document.getElementById('pc').style.opacity = G.pcanim / 100;
     }
-    //debug.innerHTML = `${G.piece.type}, ${G.piece.tspin}, ${G.piece.mts}`;
+    //debug.innerHTML = `${G.stats.pieces.length}, ${G.stats.actions.length}, ${G.stats.score.length}`
+    document.getElementById('pcs').innerHTML = "Pieces: " + G.stats.totalpieces;
+    document.getElementById('pps').innerHTML = "PPS: " + (G.stats.pieces.reduce((a, b) => a + b) / G.stats.pieces.length * 60).toFixed(2) + "/s";
+    document.getElementById('apm').innerHTML = "APM: " + (G.stats.actions.reduce((a, b) => a + b) / G.stats.actions.length * 3600).toFixed(1) + "/m";
+    document.getElementById('sps').innerHTML = "SPS: " + (G.stats.score.reduce((a, b) => a + b) / G.stats.score.length * 60).toFixed(1) + "/s";
 }
 
 function newGame() {
@@ -690,6 +753,7 @@ function newGame() {
         right: false,
         soft: false,
     };
+    G.mode = parseInt(document.getElementById('mode').value);
     G.score = 0;
     G.lines = 0;
     G.btb = 0;
@@ -706,7 +770,7 @@ function newGame() {
     for (var i = 0; i < 5; i++) {
         var piece = Math.floor(Math.random() * G.bag.length);
         G.next.push(G.bag[piece]);
-        G.bag.splice(piece, 1);
+        if (G.mode != 1) G.bag.splice(piece, 1);
         if (G.bag.length == 0) {
             G.bag = ["I", "J", "L", "O", "S", "T", "Z"];
         }
@@ -721,6 +785,10 @@ function newGame() {
         }
     }
     G.display.innerHTML = `LEVEL ${G.level} | LINES 0000 | SCORE 0000000`;
+    G.stats.pieces = [0];
+    G.stats.actions = [0];
+    G.stats.score = [0];
+    G.stats.totalpieces = 0;
 }
 
 function drawNext() {
@@ -733,6 +801,7 @@ function drawNext() {
         for (var x = 0; x < G.pieces[G.next[n]].width; x++) for(var y = 0; y < G.pieces[G.next[n]].height; y++) {
             if (G.pieces[G.next[n]].shape[x][y] != " ") nextCtx.drawImage(G.img, G.atlas[G.next[n]][0], G.atlas[G.next[n]][1], cellSize, cellSize, (nextStartLeft + x) * cellSize, (nextStartTop + (G.pieces[G.next[n]].height - y - 1 + (n * 3))) * cellSize, cellSize, cellSize);
         }
+        if (G.mode == 1) break;
     }
 }
 
@@ -765,6 +834,7 @@ document.addEventListener('keydown', (e) => {
             G.key.das.left = G.key.das.delay;
         }
         G.key.down.left = true;
+        G.stats.actions[G.stats.pieces.length - 1]++;
     }
     if (e.code == G.key.bindings.right) {
         if (!G.key.down.right) {
@@ -772,25 +842,29 @@ document.addEventListener('keydown', (e) => {
             G.key.das.left = G.key.das.delay;
         }
         G.key.down.right = true;
+        G.stats.actions[G.stats.pieces.length - 1]++;
     }
     if (e.code == G.key.bindings.soft) {
         if (!G.key.down.soft) {
-            G.gravity.speed = 1;
-            G.gravity.fall = 0;
+            G.gravity.speed = 2;
+            G.gravity.fall = G.gravity.speed;
         }
         G.key.down.soft = true;
+        G.stats.actions[G.stats.pieces.length - 1]++;
     }
-    if (e.code == G.key.bindings.hard) {
+    if (e.code == G.key.bindings.hard && G.mode != 1) {
         while (!G.piece.onFloor()) {
             G.piece.move(0, -1);
             G.score += 2;
+            G.stats.score[G.stats.pieces.length - 1] += 2;
         }
         G.piece.lock();
         G.piece = null;
         G.gravity.are = 0;
         G.gravity.fall = 0;
+        G.stats.actions[G.stats.pieces.length - 1]++;
     }
-    if (e.code == G.key.bindings.hold && G.holdable) {
+    if (e.code == G.key.bindings.hold && G.holdable && G.mode != 1) {
         var newPiece = G.hold;
         G.hold = G.piece.type;
         G.piece.remove();
@@ -812,13 +886,16 @@ document.addEventListener('keydown', (e) => {
             if (G.pieces[G.hold].shape[x][y] != " ") holdCtx.drawImage(G.img, G.atlas[G.hold][0], G.atlas[G.hold][1], 24, 24, (holdStartLeft + x) * cellSize, (holdStartTop + (G.pieces[G.hold].height - y - 1)) * cellSize, cellSize, cellSize);
         }
         G.holdable = false;
+        G.stats.actions[G.stats.pieces.length - 1]++;
     }
     try {
         if (e.code == G.key.bindings.rotateCW) {
             G.piece.rotate(1);
+            G.stats.actions[G.stats.pieces.length - 1]++;
         }
         if (e.code == G.key.bindings.rotateCCW) {
             G.piece.rotate(-1);
+            G.stats.actions[G.stats.pieces.length - 1]++;
         }
     } catch (err) {
         //debug.innerHTML = err.stack;
