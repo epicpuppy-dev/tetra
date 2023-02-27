@@ -34,6 +34,7 @@ G.gravity.speed = fallSpeed(G.level);
 G.gravity.fall = G.gravity.speed;
 G.gravity.lock = 60;
 G.gravity.are = 60;
+G.gravity.speedup = 5;
 G.bind = null;
 G.hold = null;
 G.holdable = true;
@@ -810,6 +811,8 @@ function updateSettings() {
     G.key.das.delay = dasDelay;
     var dasSpeed = parseInt(document.getElementById('das-speed').value);
     G.key.das.speed = dasSpeed;
+    var softSpeed = parseInt(document.getElementById('soft-drop-speed').value);
+    G.gravity.speedup = softSpeed;
     window.localStorage.setItem("bindings", JSON.stringify(G.key.bindings));
     window.localStorage.setItem("das", JSON.stringify(G.key.das));
 }
@@ -846,7 +849,7 @@ document.addEventListener('keydown', (e) => {
     }
     if (e.code == G.key.bindings.soft) {
         if (!G.key.down.soft) {
-            G.gravity.speed = 2;
+            G.gravity.speed = fallSpeed(G.level) / G.gravity.speedup;
             G.gravity.fall = G.gravity.speed;
         }
         G.key.down.soft = true;
