@@ -679,7 +679,6 @@ function main() {
             }
         }
     }
-    //debug.innerHTML = G.firstHold;
     if (G.piece == null) {
         if (--G.gravity.are <= 0) {
             var piece = Math.floor(Math.random() * G.bag.length);
@@ -702,6 +701,7 @@ function main() {
     } else {
         if (G.mode != 1) G.gravity.are = 60 / (G.level + 1);
     }
+    debug.innerHTML = G.gravity.fall;
     G.gravity.fall--;
     while (G.gravity.fall <= 0) {
         if (G.piece.move(0, -1) && G.key.down.soft) G.score++;
