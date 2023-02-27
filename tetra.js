@@ -701,7 +701,7 @@ function main() {
     } else {
         if (G.mode != 1) G.gravity.are = 60 / (G.level + 1);
     }
-    debug.innerHTML = G.gravity.fall;
+    debug.innerHTML = `${G.gravity.fall}, ${G.gravity.speed}, ${G.gravity.speedup}`;
     G.gravity.fall--;
     while (G.gravity.fall <= 0) {
         if (G.piece.move(0, -1) && G.key.down.soft) G.score++;
@@ -743,7 +743,6 @@ function main() {
 
 function newGame() {
     G.level = parseInt(document.getElementById('start-level').value);
-    G.gravity = {};
     G.gravity.speed = fallSpeed(G.level);
     G.gravity.fall = G.gravity.speed;
     G.gravity.lock = 60;
