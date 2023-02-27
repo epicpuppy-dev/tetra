@@ -703,9 +703,9 @@ function main() {
         if (G.mode != 1) G.gravity.are = 60 / (G.level + 1);
     }
     G.gravity.fall--;
-    if (G.gravity.fall <= 0) {
+    while (G.gravity.fall <= 0) {
         if (G.piece.move(0, -1) && G.key.down.soft) G.score++;
-        G.gravity.fall = G.gravity.speed;
+        G.gravity.fall += G.gravity.speed;
     }
     if (G.piece.onFloor()) {
         if (--G.gravity.lock <= 0) {
