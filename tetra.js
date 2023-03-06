@@ -7,7 +7,7 @@ const ctx = canvas.getContext('2d');
 const holdCtx = holdCanvas.getContext('2d');
 /** @type {CanvasRenderingContext2D} */
 const nextCtx = nextCanvas.getContext('2d');
-var cellSize = 24;
+let cellSize = 24;
 const debug = document.getElementById('debug');
 canvas.width = cellSize * 10;
 canvas.height = cellSize * 22;
@@ -23,6 +23,7 @@ G.display = document.getElementById('score');
 G.level = 0;
 G.mode = 0;
 G.score = 0;
+G.paused = false;
 G.lines = 0;
 G.btb = -1;
 G.lose = false;
@@ -177,8 +178,8 @@ G.srs.kick.I = [
 ];
 G.bag = ["I", "J", "L", "O", "S", "T", "Z"];
 G.next = [];
-for (var i = 0; i < 5; i++) {
-    var piece = Math.floor(Math.random() * G.bag.length);
+for (let i = 0; i < 5; i++) {
+    let piece = Math.floor(Math.random() * G.bag.length);
     G.next.push(G.bag[piece]);
     if (G.mode != 1) G.bag.splice(piece, 1);
     if (G.bag.length == 0) {
@@ -194,15 +195,9 @@ G.key.bindings = {
     hard: "Space",
     rotateCW: "KeyX",
     rotateCCW: "KeyZ",
-    hold: "ShiftLeft"
+    hold: "ShiftLeft",
+    retry: "KeyR",
 };
-bindingsData = window.localStorage.getItem("bindings");
-if (bindingsData !== null) {
-    G.key.bindings = JSON.parse(bindingsData);
-    for (const key of ["left", "right", "soft", "hard", "rotateCW", "rotateCCW", "hold"]) {
-        document.getElementById('key-' + key).innerHTML = G.key.bindings[key];
-    }
-}
 G.key.das = {
     delay: 15,
     speed: 2,
@@ -221,6 +216,22 @@ G.stats.pieces = [0];
 G.stats.actions = [0];
 G.stats.score = [0];
 G.stats.totalpieces = 0;
+
+//Load Settings
+const settingsData = window.localStorage.getItem('settings');
+if (settingsData !== null) {
+    const settings = JSON.parse(settingsData);
+    G.key.bindings = settings.bindings;
+    G.key.das.speed = settings.das.speed;
+    G.key.das.delay = settings.das.delay;
+    G.gravity.speedup = settings.softSpeed;
+    for (const binding in G.key.bindings) {
+        document.getElementById('key-' + binding).innerHTML = G.key.bindings[binding].replace('Key', '').replace('Arrow', '');
+    }
+    document.getElementById('das-speed').value = G.key.das.speed;
+    document.getElementById('das-delay').value = G.key.das.delay;
+    document.getElementById('soft-drop-speed').value = G.gravity.speedup;
+}
 
 class Piece {
     constructor (type, ghost) {
@@ -263,17 +274,17 @@ class Piece {
                 this.footprint = ["  z "," zz "," z  ","    "];
                 break;
         }
-        for (var x = 0; x < this.footprint.length; x++) for (var y = 0; y < this.footprint[x].length; y++) {
+        for (let x = 0; x < this.footprint.length; x++) for (let y = 0; y < this.footprint[x].length; y++) {
             if (this.footprint[x][y] != " ") if (G.grid[this.x + x][this.y + y].solid) lose = true;
         }
-        for (var x = 0; x < this.footprint.length; x++) for (var y = 0; y < this.footprint[x].length; y++) {
+        for (let x = 0; x < this.footprint.length; x++) for (let y = 0; y < this.footprint[x].length; y++) {
             if (this.footprint[x][y] != " ") G.grid[this.x + x][this.y + y] = new Cell(true, this.color, true, this.type, this.ghost);
         }
     }
     move (mx, my) {
         if (this.locked) return;
         //check if on wall or floor
-        for (var px = 0; px < this.footprint.length; px++) for (var py = 0; py < this.footprint[px].length; py++) {
+        for (let px = 0; px < this.footprint.length; px++) for (let py = 0; py < this.footprint[px].length; py++) {
             if (this.footprint[px][py] != " ") if (
                 this.x + mx + px < 0 || 
                 this.x + mx + px > 9 || 
@@ -285,7 +296,7 @@ class Piece {
             }
         }
         //remove footprint from grid
-        for (var px = 0; px < this.footprint.length; px++) for (var py = 0; py < this.footprint[px].length; py++) {
+        for (let px = 0; px < this.footprint.length; px++) for (let py = 0; py < this.footprint[px].length; py++) {
             if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(false, "#000", false, null, false);
         }
         //move piece position
@@ -300,7 +311,7 @@ class Piece {
                 G.ghost.move(0, -1);
             }
         }
-        for (var px = 0; px < this.footprint.length; px++) for (var py = 0; py < this.footprint[px].length; py++) {
+        for (let px = 0; px < this.footprint.length; px++) for (let py = 0; py < this.footprint[px].length; py++) {
             if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, true, this.type, this.ghost);
         }
         //debug.innerHTML = JSON.stringify(`${mx}, ${my}, ${this.x}, ${this.y}, ${px + mx + this.x}, ${py + my + this.y}`);
@@ -310,13 +321,13 @@ class Piece {
     }
     remove () {
         //remove footprint from grid
-        for (var px = 0; px < this.footprint.length; px++) for (var py = 0; py < this.footprint[px].length; py++) {
+        for (let px = 0; px < this.footprint.length; px++) for (let py = 0; py < this.footprint[px].length; py++) {
             if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(false, "#000", false, null, false);
         }
     }
     onFloor () {
         //check if on wall or floor
-        for (var px = 0; px < this.footprint.length; px++) for (var py = 0; py < this.footprint[px].length; py++) {
+        for (let px = 0; px < this.footprint.length; px++) for (let py = 0; py < this.footprint[px].length; py++) {
             if (this.footprint[px][py] != " ") if (
                 this.y - 1 + py < 0 ||
                 (G.grid[this.x + px][this.y - 1 + py].solid && !G.grid[this.x + px][this.y - 1 + py].moving)
@@ -328,30 +339,30 @@ class Piece {
     }
     lock () {
         //add static footprint to current position
-        for (var px = 0; px < this.footprint.length; px++) for (var py = 0; py < this.footprint[px].length; py++) {
+        for (let px = 0; px < this.footprint.length; px++) for (let py = 0; py < this.footprint[px].length; py++) {
             if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, false, this.type, this.ghost);
         }
         this.locked = true;
         G.ghost = null;
         //clear lines
-        var lines = new Array(G.grid[0].length).fill(true);
-        for (var x = 0; x < G.grid.length; x++) {
-            for (var y = 0; y < G.grid[x].length; y++) {
+        let lines = new Array(G.grid[0].length).fill(true);
+        for (let x = 0; x < G.grid.length; x++) {
+            for (let y = 0; y < G.grid[x].length; y++) {
                 if (!G.grid[x][y].solid || G.grid[x][y].moving) {
                     lines[y] = false;
                 }
             }
         }
-        var cleared = 0;
-        for (var l = 0; l < lines.length; l++) {
+        let cleared = 0;
+        for (let l = 0; l < lines.length; l++) {
             if (lines[l]) cleared++;
         }
         G.lines += cleared;
         G.nextLevel -= cleared;
-        var tspin = false;
-        var mts = false;
+        let tspin = false;
+        let mts = false;
         if (this.type == "T" && this.tspin) {
-            var corners = 0;
+            let corners = 0;
             //debug.innerHTML = "";
             for (const corner of [[0, 0], [2, 0], [2, 2], [0, 2]]) {
                 //debug.innerHTML += JSON.stringify(G.grid[this.x + corner[0]][this.y + corner[1]]) + ", ";
@@ -480,9 +491,9 @@ class Piece {
             }
             if (cleared > 0) G.gravity.are += 20;
         }
-        for (var x = 0; x < G.grid.length; x++) {
-            var line = lines.concat();
-            for (var y = 0; y < G.grid[x].length; y++) {
+        for (let x = 0; x < G.grid.length; x++) {
+            let line = lines.concat();
+            for (let y = 0; y < G.grid[x].length; y++) {
                 if (line[y]) {
                     G.grid[x].splice(y, 1);
                     G.grid[x].push(new Cell(false, "#000", false, null, false));
@@ -491,8 +502,8 @@ class Piece {
                 }
             }
         }
-        var pc = true;
-        for (var px = 0; px < G.grid.length; px++) for (var py = 0; py < G.grid[px].length; py++) {
+        let pc = true;
+        for (let px = 0; px < G.grid.length; px++) for (let py = 0; py < G.grid[px].length; py++) {
             if (G.grid[px][py].solid) {
                 pc = false;
                 //debug.innerHTML = `${px}, ${py}`;
@@ -520,25 +531,27 @@ class Piece {
 
     }
     rotate (rot) {
-        var newRot = this.rotation + rot;
+        let newRot = this.rotation + rot;
         if (newRot > 3) {
             newRot -= 4;
         }
         if (newRot < 0) {
             newRot += 4;
         }
+        let kickTable;
         //check if clear
         if (this.type == "I") {
-            var kickTable = G.srs.kick.I;
+            kickTable = G.srs.kick.I;
         } else {
-            var kickTable = G.srs.kick.JLTSZ;
+            kickTable = G.srs.kick.JLTSZ;
         }
         //debug.innerHTML = G.srs[this.type][newRot];
-        var valid = false;
-        for (var k = 0; k < 5; k++) {
-            var kickOffset = kickTable[this.rotation][newRot][k];
-            var test = true;
-            for (var px = 0; px < G.srs[this.type][newRot].length; px++) for (var py = 0; py < G.srs[this.type][newRot][px].length; py++) {
+        let valid = false;
+        let kickOffset;
+        for (let k = 0; k < 5; k++) {
+            kickOffset = kickTable[this.rotation][newRot][k];
+            let test = true;
+            for (let px = 0; px < G.srs[this.type][newRot].length; px++) for (let py = 0; py < G.srs[this.type][newRot][px].length; py++) {
                 if (G.srs[this.type][newRot][px][py] != " ") if (
                     this.x + px + kickOffset[0] < 0 || 
                     this.x + px + kickOffset[0] > 9 || 
@@ -582,7 +595,7 @@ class Piece {
             }
         }
         //add footprint to new position
-        for (var px = 0; px < this.footprint.length; px++) for (var py = 0; py < this.footprint[px].length; py++) {
+        for (let px = 0; px < this.footprint.length; px++) for (let py = 0; py < this.footprint[px].length; py++) {
             if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, true, this.type, this.ghost);
         }
         this.tspin = true;
@@ -610,22 +623,22 @@ function fallSpeed(level) {
 
 /** @type {Cell[][]} */
 G.grid = new Array(10);
-for (var x = 0; x < G.grid.length; x++) {
+for (let x = 0; x < G.grid.length; x++) {
     G.grid[x] = new Array(40);
-    for (var y = 0; y < G.grid[x].length; y++) {
+    for (let y = 0; y < G.grid[x].length; y++) {
         G.grid[x][y] = new Cell(false, "#000", false, null, false);
     }
 }
 
 function drawGrid() {
     ctx.strokeStyle = colors[8];
-    for (var x = 0; x < canvas.width; x += cellSize) {
+    for (let x = 0; x < canvas.width; x += cellSize) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, canvas.height);
         ctx.stroke();
     }
-    for (var y = 0; y < canvas.height; y += cellSize) {
+    for (let y = 0; y < canvas.height; y += cellSize) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(canvas.width, y);
@@ -641,6 +654,10 @@ function drawGrid() {
 }
 function main() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (G.paused) {
+        nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+        return;
+    }
     G.stats.actions.push(0);
     G.stats.pieces.push(0);
     G.stats.score.push(0);
@@ -665,7 +682,7 @@ function main() {
     else scoreDisplay = G.score;
     G.display.innerHTML = `LEVEL ${levelDisplay} | LINES ${lineDisplay} | SCORE ${scoreDisplay}`;
     drawGrid();
-    for (var x = 0; x < G.grid.length; x++) for (var y = 0; y < G.grid[x].length; y++) {
+    for (let x = 0; x < G.grid.length; x++) for (let y = 0; y < G.grid[x].length; y++) {
         ctx.fillStyle = G.grid[x][y].color;
         if (G.grid[x][y].solid) {
             try {
@@ -681,7 +698,7 @@ function main() {
     }
     if (G.piece == null) {
         if (--G.gravity.are <= 0) {
-            var piece = Math.floor(Math.random() * G.bag.length);
+            let piece = Math.floor(Math.random() * G.bag.length);
             G.piece = new Piece(G.next.shift(), false);
             G.next.push(G.bag[piece]);
             if (G.firstHold) {
@@ -743,6 +760,7 @@ function main() {
 
 function newGame() {
     G.level = parseInt(document.getElementById('start-level').value);
+    G.paused = false;
     G.gravity.speed = fallSpeed(G.level);
     G.gravity.fall = G.gravity.speed;
     G.gravity.lock = 60;
@@ -767,8 +785,8 @@ function newGame() {
     G.hold = null;
     G.bag = ["I", "J", "L", "O", "S", "T", "Z"];
     G.next = [];
-    for (var i = 0; i < 5; i++) {
-        var piece = Math.floor(Math.random() * G.bag.length);
+    for (let i = 0; i < 5; i++) {
+        let piece = Math.floor(Math.random() * G.bag.length);
         G.next.push(G.bag[piece]);
         if (G.mode != 1) G.bag.splice(piece, 1);
         if (G.bag.length == 0) {
@@ -778,9 +796,9 @@ function newGame() {
     drawNext();
     holdCtx.clearRect(0, 0, holdCanvas.width, holdCanvas.height);
     G.grid = new Array(10);
-    for (var x = 0; x < G.grid.length; x++) {
+    for (let x = 0; x < G.grid.length; x++) {
         G.grid[x] = new Array(40);
-        for (var y = 0; y < G.grid[x].length; y++) {
+        for (let y = 0; y < G.grid[x].length; y++) {
             G.grid[x][y] = new Cell(false, "#000", false, null, false);
         }
     }
@@ -798,7 +816,7 @@ function drawNext() {
         nextStartLeft = (4 - G.pieces[G.next[n]].width) / 2;
         nextStartTop = (3 - G.pieces[G.next[n]].height) / 2;
         nextCtx.fillStyle = G.pieces[G.next[n]].color;
-        for (var x = 0; x < G.pieces[G.next[n]].width; x++) for(var y = 0; y < G.pieces[G.next[n]].height; y++) {
+        for (let x = 0; x < G.pieces[G.next[n]].width; x++) for(let y = 0; y < G.pieces[G.next[n]].height; y++) {
             if (G.pieces[G.next[n]].shape[x][y] != " ") nextCtx.drawImage(G.img, G.atlas[G.next[n]][0], G.atlas[G.next[n]][1], cellSize, cellSize, (nextStartLeft + x) * cellSize, (nextStartTop + (G.pieces[G.next[n]].height - y - 1 + (n * 3))) * cellSize, cellSize, cellSize);
         }
         if (G.mode == 1) break;
@@ -806,14 +824,18 @@ function drawNext() {
 }
 
 function updateSettings() {
-    var dasDelay = parseInt(document.getElementById('das-delay').value);
+    let dasDelay = parseInt(document.getElementById('das-delay').value);
     G.key.das.delay = dasDelay;
-    var dasSpeed = parseInt(document.getElementById('das-speed').value);
+    let dasSpeed = parseInt(document.getElementById('das-speed').value);
     G.key.das.speed = dasSpeed;
-    var softSpeed = parseInt(document.getElementById('soft-drop-speed').value);
+    let softSpeed = parseInt(document.getElementById('soft-drop-speed').value);
     G.gravity.speedup = softSpeed;
-    window.localStorage.setItem("bindings", JSON.stringify(G.key.bindings));
-    window.localStorage.setItem("das", JSON.stringify(G.key.das));
+    let settingsExport = {
+        bindings: G.key.bindings,
+        das: G.key.das,
+        softSpeed: G.gravity.speedup
+    }
+    window.localStorage.setItem("settings", JSON.stringify(settingsExport));
 }
 
 function rebind(key) {
@@ -823,12 +845,27 @@ function rebind(key) {
     }
 }
 
+function pause() {
+    G.paused = !G.paused;
+    if (G.paused) {
+        document.getElementById('pause').innerHTML = "RESUME";
+    } else {
+        document.getElementById('pause').innerHTML = "PAUSE";
+        drawNext();
+    }
+}
+
 document.addEventListener('keydown', (e) => {
     if (["ArrowDown", "Space"].includes(e.code)) e.preventDefault();
     if (G.bind != null) {
         G.key.bindings[G.bind] = e.code;
-        document.getElementById('key-' + G.bind).innerHTML = e.code;
+        document.getElementById('key-' + G.bind).innerHTML = e.code.replace("Arrow", "").replace("Key", "");
         G.bind = null;
+        return;
+    }
+    if (e.code == G.key.bindings.retry) {
+        newGame();
+        return;
     }
     if (e.code == G.key.bindings.left) {
         if (!G.key.down.left) {
@@ -867,7 +904,7 @@ document.addEventListener('keydown', (e) => {
         G.stats.actions[G.stats.pieces.length - 1]++;
     }
     if (e.code == G.key.bindings.hold && G.holdable && G.mode != 1) {
-        var newPiece = G.hold;
+        let newPiece = G.hold;
         G.hold = G.piece.type;
         G.piece.remove();
         G.ghost.remove();
@@ -884,7 +921,7 @@ document.addEventListener('keydown', (e) => {
         holdStartLeft = (4 - G.pieces[G.hold].width) / 2;
         holdStartTop = (3 - G.pieces[G.hold].height) / 2;
         holdCtx.fillStyle = G.pieces[G.hold].color;
-        for (var x = 0; x < G.pieces[G.hold].width; x++) for(var y = 0; y < G.pieces[G.hold].height; y++) {
+        for (let x = 0; x < G.pieces[G.hold].width; x++) for(let y = 0; y < G.pieces[G.hold].height; y++) {
             if (G.pieces[G.hold].shape[x][y] != " ") holdCtx.drawImage(G.img, G.atlas[G.hold][0], G.atlas[G.hold][1], 24, 24, (holdStartLeft + x) * cellSize, (holdStartTop + (G.pieces[G.hold].height - y - 1)) * cellSize, cellSize, cellSize);
         }
         G.holdable = false;
@@ -900,7 +937,7 @@ document.addEventListener('keydown', (e) => {
             G.stats.actions[G.stats.pieces.length - 1]++;
         }
     } catch (err) {
-        //debug.innerHTML = err.stack;
+        debug.innerHTML = err.stack;
     }
 });
 
