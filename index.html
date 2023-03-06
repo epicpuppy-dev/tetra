@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css"/>
     </head>
     <body>
-        <h2 id="score">LEVEL 0 | LINES 0000 | SCORE 0000000</h2>
+        <h2 id="score">LEVEL 00 | LINES 0000 | SCORE 0000000</h2>
         <div id="main">
             <div id="hold-container">
                 <h3 id="hold">HOLD</h3>
@@ -26,7 +26,7 @@
                 <h3 style="opacity: 0">T-SPIN DOUBLE MINI</h3>
             </div>
         </div><br>
-        <p>V0.2.4</p>
+        <p>V0.2.5-pre.0</p>
         <p id="debug" style="display:none">DEBUG</p>
         Starting Level: <input id="start-level" type="number" max="29" value="0"><br>
         Mode: <select id="mode">
@@ -55,6 +55,7 @@
                 Rotate CW: <button id="key-rotateCW" onclick="rebind('rotateCW')">X</button><br>
                 Rotate CCW: <button id="key-rotateCCW" onclick="rebind('rotateCCW')">Z</button><br>
                 Hold: <button id="key-hold" onclick="rebind('hold')">ShiftLeft</button><br>
+                Retry: <button id="key-retry" onclick="rebind('retry')">R</button><br>
                 <br>
             </div>
         </div>
