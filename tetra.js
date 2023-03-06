@@ -23,6 +23,7 @@ G.display = document.getElementById('score');
 G.level = 0;
 G.mode = 0;
 G.score = 0;
+G.paused = false;
 G.lines = 0;
 G.btb = -1;
 G.lose = false;
@@ -653,6 +654,10 @@ function drawGrid() {
 }
 function main() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (G.paused) {
+        nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+        return;
+    }
     G.stats.actions.push(0);
     G.stats.pieces.push(0);
     G.stats.score.push(0);
@@ -755,6 +760,7 @@ function main() {
 
 function newGame() {
     G.level = parseInt(document.getElementById('start-level').value);
+    G.paused = false;
     G.gravity.speed = fallSpeed(G.level);
     G.gravity.fall = G.gravity.speed;
     G.gravity.lock = 60;
@@ -836,6 +842,16 @@ function rebind(key) {
     if (G.bind == null) {
         G.bind = key;
         document.getElementById('key-' + key).innerHTML = "PRESS KEY";
+    }
+}
+
+function pause() {
+    G.paused = !G.paused;
+    if (G.paused) {
+        document.getElementById('pause').innerHTML = "RESUME";
+    } else {
+        document.getElementById('pause').innerHTML = "PAUSE";
+        drawNext();
     }
 }
 
