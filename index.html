@@ -7,6 +7,7 @@
     <body>
 
         <h2 id="score">LEVEL 00 | LINES 0000 | SCORE 0000000</h2>
+        <h4 id="high">HIGH SCORE 0000000</h4>
         <div id="main">
             <div id="hold-container">
                 <h3 id="hold">HOLD</h3>
@@ -14,7 +15,7 @@
                 <h4 id="pcs">Pieces: 0</h4>
                 <h4 id="pps">PPS: 0.00/s</h4>
                 <h4 id="apm">APM: 0.0/m</h4>
-                <h4 id="sps">SPS: 0.00/s</h4>
+                <h4 id="sps">SPS: 0.0/s</h4>
                 <h3 id="b2b" style="display: none">B2B x0</h3>
                 <h3 id="tspin" style="opacity: 0">T-SPIN</h3>
                 <h3 id="pc" style="opacity: 0">PERFECT CLEAR</h3>
@@ -27,7 +28,7 @@
                 <h3 style="opacity: 0">T-SPIN DOUBLE MINI</h3>
             </div>
         </div><br>
-        <p>V0.2.6</p>
+        <p>V0.2.7</p>
         <p id="debug" style="display:none">DEBUG</p>
         <button id="pause" onclick="pause()">PAUSE</button><br>
         Starting Level: <input id="start-level" type="number" max="29" value="0"><br>
@@ -62,6 +63,7 @@
                 Rotate CCW: <button id="key-rotateCCW" onclick="rebind('rotateCCW')">Z</button><br>
                 Hold: <button id="key-hold" onclick="rebind('hold')">ShiftLeft</button><br>
                 Retry: <button id="key-retry" onclick="rebind('retry')">R</button><br>
+                Pause: <button id="key-pause" onclick="rebind('pause')">Escape</button><br>
                 <br>
             </div>
         </div>
