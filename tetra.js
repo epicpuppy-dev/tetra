@@ -41,9 +41,15 @@ G.bind = null;
 G.hold = null;
 G.holdable = true;
 G.firstHold = 2;
-G.img = new Image();
-G.img.src = 'img.png';
-G.img.onload = setInterval(main, 1000/60);
+G.skinLocation = "skin.json";
+G.skin = {
+    src: "img.png",
+    size: {
+        width: 192,
+        height: 216
+    },
+    tileSize: 24
+};
 G.atlas = {
     "I-": [0, 0],
     "I-d": [1, 0],
@@ -189,7 +195,7 @@ G.srs.S = [
     [[" ","S-r"," "," "],[" ","S-lu","S-rd"," "],[" "," ","S-l"," "],[" "," "," "," "]],
     [[" "," "," "," "],[" ","S-ru","S-d"," "],["S-u","S-ld"," "," "],[" "," "," "," "]],
     [["S-r"," "," "," "],["S-lu","S-rd"," "," "],[" ","S-l"," "," "],[" "," "," "," "]],
-    [[" ","S-ru","S-d"," "],["S-lu","S-rd"," "," "],[" "," "," "," "],[" "," "," "," "]]
+    [[" ","S-ru","S-d"," "],["S-u","S-ld"," "," "],[" "," "," "," "],[" "," "," "," "]]
 ];
 G.srs.T = [
     [[" ","T-r"," "," "],[" ","T-rlu","T-d"," "],[" ","T-l"," "," "],[" "," "," "," "]],
@@ -198,9 +204,9 @@ G.srs.T = [
     [[" ","T-r"," "," "],["T-u","T-lud","T-d"," "],[" "," "," "," "],[" "," "," "," "]]
 ];
 G.srs.Z = [
-    [[" "," ","Z-r"," "],[" ","Z-lu","Z-rd"," "],[" ","Z-l"," "," "],[" "," "," "," "]],
+    [[" "," ","Z-r"," "],[" ","Z-ru","Z-ld"," "],[" ","Z-l"," "," "],[" "," "," "," "]],
     [[" "," "," "," "],["Z-u","Z-rd"," "," "],[" ","Z-lu","Z-d"," "],[" "," "," "," "]],
-    [[" ","Z-r"," "," "],["Z-lu","Z-rd"," "," "],["Z-l"," "," "," "],[" "," "," "," "]],
+    [[" ","Z-r"," "," "],["Z-ru","Z-ld"," "," "],["Z-l"," "," "," "],[" "," "," "," "]],
     [["Z-u","Z-rd"," "," "],[" ","Z-lu","Z-d"," "],[" "," "," "," "],[" "," "," "," "]]
 ];
 G.srs.kick = {};
@@ -250,7 +256,6 @@ for (let i = 0; i < 5; i++) {
         G.bag = ["I", "J", "L", "O", "S", "T", "Z"];
     }
 }
-drawNext();
 G.key = {};
 G.key.bindings = {
     left: "ArrowLeft",
@@ -290,6 +295,7 @@ if (settingsData !== null) {
     if (settings.das.delay !== undefined) G.key.das.delay = settings.das.delay;
     if (settings.softSpeed !== undefined) G.gravity.speedup = settings.softSpeed;
     if (settings.connectedTextures !== undefined) G.connectedTextures = settings.connectedTextures;
+    if (settings.skin !== undefined) G.skinLocation = settings.skin;
     for (const binding in G.key.bindings) {
         document.getElementById('key-' + binding).innerHTML = G.key.bindings[binding].replace('Key', '').replace('Arrow', '');
     }
@@ -297,6 +303,7 @@ if (settingsData !== null) {
     document.getElementById('das-delay').value = G.key.das.delay;
     document.getElementById('soft-drop-speed').value = G.gravity.speedup;
     document.getElementById('connected-textures').value = G.connectedTextures;
+    document.getElementById('skin-file').value = G.skinLocation;
 }
 
 class Piece {
@@ -905,6 +912,7 @@ function drawNext() {
 }
 
 function updateSettings() {
+    try {
     let dasDelay = parseInt(document.getElementById('das-delay').value);
     G.key.das.delay = dasDelay;
     let dasSpeed = parseInt(document.getElementById('das-speed').value);
@@ -912,6 +920,9 @@ function updateSettings() {
     let softSpeed = parseInt(document.getElementById('soft-drop-speed').value);
     G.gravity.speedup = softSpeed;
     let connectedTextures = document.getElementById('connected-textures').value;
+    let reload = false;
+    if (G.skinLocation != document.getElementById('skin-file').value) reload = true;
+    G.skinLocation = document.getElementById('skin-file').value;
     if (connectedTextures == "true") {
         G.connectedTextures = true;
     } else {
@@ -922,8 +933,16 @@ function updateSettings() {
         das: G.key.das,
         softSpeed: G.gravity.speedup,
         connectedTextures: G.connectedTextures,
+        skin: G.skinLocation,
     }
     window.localStorage.setItem("settings", JSON.stringify(settingsExport));
+    if (reload) {
+        alert("Skin location change detected. This page will now be reloaded.");
+        location.reload();
+    }
+    } catch (e) {
+        alert(e.stack);
+    } 
 }
 
 function rebind(key) {
@@ -1045,3 +1064,20 @@ document.addEventListener('keyup', (e) => {
         G.key.down.soft = false;
     }
 });
+
+G.img = new Image();
+async function Load() {
+    let response, data;
+    try {
+        response = await fetch(G.skinLocation);
+        data = await response.json();
+    } catch (e) {
+        response = await fetch("skin.json");
+        data = await response.json();
+    }
+    G.skin = data;
+    G.img.src = G.skin.src;
+    G.img.onload = () => setInterval(main, 1000/60);
+}
+
+Load();
