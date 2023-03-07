@@ -30,6 +30,7 @@ G.lose = false;
 G.tsanim = 0;
 G.pcanim = 0;
 G.nextLevel = 10;
+G.connectedTextures = true;
 G.gravity = {};
 G.gravity.speed = fallSpeed(G.level);
 G.gravity.fall = G.gravity.speed;
@@ -40,104 +41,173 @@ G.bind = null;
 G.hold = null;
 G.holdable = true;
 G.firstHold = 2;
-G.img = new Image();
-G.img.src = 'img.png';
-G.img.onload = setInterval(main, 1000/60);
+G.skinLocation = "skin.json";
+G.skin = {
+    src: "img.png",
+    size: {
+        width: 192,
+        height: 216
+    },
+    tileSize: 24
+};
 G.atlas = {
-    I: [0, 0],
-    J: [24, 0],
-    L: [48, 0],
-    O: [72, 0],
-    S: [0, 24],
-    T: [24, 24],
-    Z: [48, 24]
+    "I-": [0, 0],
+    "I-d": [1, 0],
+    "I-l": [2, 0],
+    "I-u": [3, 0],
+    "I-r": [4, 0],
+    "I-ud": [5, 0],
+    "I-rl": [6, 0],
+    "J-": [7, 0],
+    "J-d": [0, 1],
+    "J-l": [1, 1],
+    "J-u": [2, 1],
+    "J-r": [3, 1],
+    "J-ud": [4, 1],
+    "J-rl": [5, 1],
+    "J-lu": [6, 1],
+    "J-ld": [7, 1],
+    "J-rd": [0, 2],
+    "J-ru": [1, 2],
+    "L-": [2, 2],
+    "L-d": [3, 2],
+    "L-l": [4, 2],
+    "L-u": [5, 2],
+    "L-r": [6, 2],
+    "L-ud": [7, 2],
+    "L-rl": [0, 3],
+    "L-lu": [1, 3],
+    "L-ld": [2, 3],
+    "L-rd": [3, 3],
+    "L-ru": [4, 3],
+    "O-": [5, 3],
+    "O-d": [6, 3],
+    "O-l": [7, 3],
+    "O-u": [0, 4],
+    "O-r": [1, 4],
+    "O-rd": [2, 4],
+    "O-ru": [3, 4],
+    "O-lu": [4, 4],
+    "O-ld": [5, 4],
+    "S-": [6, 4],
+    "S-d": [7, 4],
+    "S-l": [0, 5],
+    "S-u": [1, 5],
+    "S-r": [2, 5],
+    "S-lu": [3, 5],
+    "S-ld": [4, 5],
+    "S-rd": [5, 5],
+    "S-ru": [6, 5],
+    "T-": [7, 5],
+    "T-d": [0, 6],
+    "T-l": [1, 6],
+    "T-u": [2, 6],
+    "T-r": [3, 6],
+    "T-lu": [4, 6],
+    "T-ld": [5, 6],
+    "T-rd": [6, 6],
+    "T-ru": [7, 6],
+    "T-rlu": [0, 7],
+    "T-lud": [1, 7],
+    "T-rld": [2, 7],
+    "T-rud": [3, 7],
+    "T-rl": [4, 7],
+    "Z-": [5, 7],
+    "Z-d": [6, 7],
+    "Z-l": [7, 7],
+    "Z-u": [0, 8],
+    "Z-r": [1, 8],
+    "Z-lu": [2, 8],
+    "Z-ld": [3, 8],
+    "Z-rd": [4, 8],
+    "Z-ru": [5, 8]
 }
 G.pieces = {
     I: {
         width: 4,
         height: 1,
-        shape: ["i", "i", "i", "i"],
+        shape: [["I-r"], ["I-rl"], ["I-rl"], ["I-l"]],
         color: colors[1]
     },
     J: {
         width: 3,
         height: 2,
-        shape: ["jj", "j ", "j "],
+        shape: [["J-ru", "J-d"], ["J-rl", " "], ["J-l", " "]],
         color: colors[2]
     },
     L: {
         width: 3,
         height: 2,
-        shape: ["l ", "l ", "ll"],
+        shape: [["L-r", " "], ["L-rl", " "], ["L-lu", "L-d"]],
         color: colors[3]
     },
     O: {
         width: 2,
         height: 2,
-        shape: ["oo", "oo"],
+        shape: [["O-ru", "O-rd"], ["O-lu", "O-ld"]],
         color: colors[4]
     },
     S: {
         width: 3,
         height: 2,
-        shape: ["s ", "ss", " s"],
+        shape: [["S-r", " "], ["S-lu", "S-rd"], [" ", "S-l"]],
         color: colors[5]
     },
     T: {
         width: 3,
         height: 2,
-        shape: ["t ", "tt", "t "],
+        shape: [["T-r", " "], ["T-rlu", "T-d"], ["T-l", " "]],
         color: colors[6]
     },
     Z: {
         width: 3,
         height: 2,
-        shape: [" z", "zz", "z "],
+        shape: [[" ", "Z-r"], ["Z-ru", "Z-ld"], ["Z-l", " "]],
         color: colors[7]
     }
 };
 G.srs = {};
 G.srs.I = [
-    ["  i ","  i ","  i ","  i "],
-    ["    ","    ","iiii","    "],
-    [" i  "," i  "," i  "," i  "],
-    ["    ","iiii","    ","    "]
+    [[" "," ","I-r"," "],[" "," ","I-rl"," "],[" "," ","I-rl"," "],[" "," ","I-l"," "]],
+    [[" "," "," "," "],[" "," "," "," "],["I-u","I-ud","I-ud","I-d"],[" "," "," "," "]],
+    [[" ","I-r"," "," "],[" ","I-rl"," "," "],[" ","I-rl"," "," "],[" ","I-l"," "," "]],
+    [[" "," "," "," "],["I-u","I-ud","I-ud","I-d"],[" "," "," "," "],[" "," "," "," "]]
 ];
 G.srs.J = [
-    [" jj "," j  "," j  ","    "],
-    ["    ","jjj ","  j ","    "],
-    [" j  "," j  ","jj  ","    "],
-    ["j   ","jjj ","    ","    "]
+    [[" ","J-ru","J-d"," "],[" ","J-rl"," "," "],[" ","J-l"," "," "],[" "," "," "," "]],
+    [[" "," "," "," "],["J-u","J-ud","J-rd"," "],[" "," ","J-l"," "],[" "," "," "," "]],
+    [[" ","J-r"," "," "],[" ","J-rl"," "," "],["J-u","J-ld"," "," "],[" "," "," "," "]],
+    [["J-r"," "," "," "],["J-lu","J-ud","J-d"," "],[" "," "," "," "],[" "," "," "," "]]
 ];
 G.srs.L = [
-    [" l  "," l  "," ll ","    "],
-    ["    ","lll ","l   ","    "],
-    ["ll   "," l  "," l ","    "],
-    ["  l ","lll ","    ","    "]
+    [[" ","L-r"," "," "],[" ","L-rl"," "," "],[" ","L-lu","L-d"," "],[" "," "," "," "]],
+    [[" "," "," "," "],["L-ru","L-ud","L-d"," "],["L-l"," "," "," "],[" "," "," "," "]],
+    [["L-u","L-rd"," "," "],[" ","L-rl"," "," "],[" ","L-l"," "," "],[" "," "," "," "]],
+    [[" "," ","L-r"," "],["L-u","L-ud","L-ld"," "],[" "," "," "," "],[" "," "," "," "]]
 ];
 G.srs.O = [
-    ["    "," oo "," oo ","    "],
-    ["    "," oo "," oo ","    "],
-    ["    "," oo "," oo ","    "],
-    ["    "," oo "," oo ","    "]
+    [[" "," "," "," "],[" ","O-ru","O-rd"," "],[" ","O-lu","O-ld"," "],[" "," "," "," "]],
+    [[" "," "," "," "],[" ","O-ru","O-rd"," "],[" ","O-lu","O-ld"," "],[" "," "," "," "]],
+    [[" "," "," "," "],[" ","O-ru","O-rd"," "],[" ","O-lu","O-ld"," "],[" "," "," "," "]],
+    [[" "," "," "," "],[" ","O-ru","O-rd"," "],[" ","O-lu","O-ld"," "],[" "," "," "," "]]
 ];
 G.srs.S = [
-    [" s  "," ss ","  s ","    "],
-    ["    "," ss ","ss  ","    "],
-    ["s   ","ss  "," s  ","    "],
-    [" ss ","ss  ","    ","    "]
+    [[" ","S-r"," "," "],[" ","S-lu","S-rd"," "],[" "," ","S-l"," "],[" "," "," "," "]],
+    [[" "," "," "," "],[" ","S-ru","S-d"," "],["S-u","S-ld"," "," "],[" "," "," "," "]],
+    [["S-r"," "," "," "],["S-lu","S-rd"," "," "],[" ","S-l"," "," "],[" "," "," "," "]],
+    [[" ","S-ru","S-d"," "],["S-u","S-ld"," "," "],[" "," "," "," "],[" "," "," "," "]]
 ];
 G.srs.T = [
-    [" t  "," tt "," t  ","    "],
-    ["    ","ttt "," t  ","    "],
-    [" t  ","tt  "," t  ","    "],
-    [" t  ","ttt ","    ","    "]
+    [[" ","T-r"," "," "],[" ","T-rlu","T-d"," "],[" ","T-l"," "," "],[" "," "," "," "]],
+    [[" "," "," "," "],["T-u","T-rud","T-d"," "],[" ","T-l"," "," "],[" "," "," "," "]],
+    [[" ","T-r"," "," "],["T-u","T-rld"," "," "],[" ","T-l"," "," "],[" "," "," "," "]],
+    [[" ","T-r"," "," "],["T-u","T-lud","T-d"," "],[" "," "," "," "],[" "," "," "," "]]
 ];
 G.srs.Z = [
-    ["  z "," zz "," z  ","    "],
-    ["    ","zz  "," zz ","    "],
-    [" z  ","zz  ","z   ","    "],
-    ["zz  "," zz ","    ","    "]
+    [[" "," ","Z-r"," "],[" ","Z-ru","Z-ld"," "],[" ","Z-l"," "," "],[" "," "," "," "]],
+    [[" "," "," "," "],["Z-u","Z-rd"," "," "],[" ","Z-lu","Z-d"," "],[" "," "," "," "]],
+    [[" ","Z-r"," "," "],["Z-ru","Z-ld"," "," "],["Z-l"," "," "," "],[" "," "," "," "]],
+    [["Z-u","Z-rd"," "," "],[" ","Z-lu","Z-d"," "],[" "," "," "," "],[" "," "," "," "]]
 ];
 G.srs.kick = {};
 G.srs.kick.JLTSZ = [
@@ -186,7 +256,6 @@ for (let i = 0; i < 5; i++) {
         G.bag = ["I", "J", "L", "O", "S", "T", "Z"];
     }
 }
-drawNext();
 G.key = {};
 G.key.bindings = {
     left: "ArrowLeft",
@@ -221,16 +290,20 @@ G.stats.totalpieces = 0;
 const settingsData = window.localStorage.getItem('settings');
 if (settingsData !== null) {
     const settings = JSON.parse(settingsData);
-    G.key.bindings = settings.bindings;
-    G.key.das.speed = settings.das.speed;
-    G.key.das.delay = settings.das.delay;
-    G.gravity.speedup = settings.softSpeed;
+    if (settings.bindings !== undefined) G.key.bindings = settings.bindings;
+    if (settings.das.speed !== undefined) G.key.das.speed = settings.das.speed;
+    if (settings.das.delay !== undefined) G.key.das.delay = settings.das.delay;
+    if (settings.softSpeed !== undefined) G.gravity.speedup = settings.softSpeed;
+    if (settings.connectedTextures !== undefined) G.connectedTextures = settings.connectedTextures;
+    if (settings.skin !== undefined) G.skinLocation = settings.skin;
     for (const binding in G.key.bindings) {
         document.getElementById('key-' + binding).innerHTML = G.key.bindings[binding].replace('Key', '').replace('Arrow', '');
     }
     document.getElementById('das-speed').value = G.key.das.speed;
     document.getElementById('das-delay').value = G.key.das.delay;
     document.getElementById('soft-drop-speed').value = G.gravity.speedup;
+    document.getElementById('connected-textures').value = G.connectedTextures;
+    document.getElementById('skin-file').value = G.skinLocation;
 }
 
 class Piece {
@@ -247,38 +320,38 @@ class Piece {
             case "I":
                 this.color = colors[1];
                 this.y = 19;
-                this.footprint = ["  i ","  i ","  i ","  i "];
+                this.footprint = [[" ", " ", "I-r", " "],[" ", " ", "I-rl", " "],[" ", " ", "I-rl", " "],[" ", " ", "I-l", " "]];
                 break;
             case "J":
                 this.color = colors[2];
-                this.footprint = [" jj "," j  "," j  ","    "];
+                this.footprint = [[" ", "J-ru", "J-d", " "],[" ", "J-rl", " ", " "],[" ", "J-l", " ", " "],[" ", " ", " ", " "]];
                 break;
             case "L":
                 this.color = colors[3];
-                this.footprint = [" l  "," l  "," ll ","    "];
+                this.footprint = [[" ", "L-r", " ", " "],[" ", "L-rl", " ", " "],[" ", "L-lu", "L-d", " "],[" ", " ", " ", " "]];
                 break;
             case "O":
                 this.color = colors[4];
-                this.footprint = ["    "," oo "," oo ","    "];
+                this.footprint = [[" ", " ", " ", " "],[" ", "O-ru", "O-rd", " "],[" ", "O-lu", "O-ld", " "],[" ", " ", " ", " "]];
                 break;
             case "S":
                 this.color = colors[5];
-                this.footprint = [" s  "," ss ","  s ","    "];
+                this.footprint = [[" ", "S-r", " ", " "],[" ", "S-lu", "S-rd", " "],[" ", " ", "S-l", " "],[" ", " ", " ", " "]];
                 break;
             case "T":
                 this.color = colors[6];
-                this.footprint = [" t  "," tt "," t  ","    "];
+                this.footprint = [[" ", "T-r", " ", " "],[" ", "T-rlu", "T-d", " "],[" ", "T-l", " ", " "],[" ", " ", " ", " "]];
                 break;
             case "Z":
                 this.color = colors[7];
-                this.footprint = ["  z "," zz "," z  ","    "];
+                this.footprint = [[" ", " ", "Z-r", " "],[" ", "Z-ru", "Z-ld", " "],[" ", "Z-l", " ", " "],[" ", " ", " ", " "]];
                 break;
         }
         for (let x = 0; x < this.footprint.length; x++) for (let y = 0; y < this.footprint[x].length; y++) {
             if (this.footprint[x][y] != " ") if (G.grid[this.x + x][this.y + y].solid) lose = true;
         }
         for (let x = 0; x < this.footprint.length; x++) for (let y = 0; y < this.footprint[x].length; y++) {
-            if (this.footprint[x][y] != " ") G.grid[this.x + x][this.y + y] = new Cell(true, this.color, true, this.type, this.ghost);
+            if (this.footprint[x][y] != " ") G.grid[this.x + x][this.y + y] = new Cell(true, this.color, true, this.footprint[x][y], this.ghost);
         }
     }
     move (mx, my) {
@@ -312,7 +385,7 @@ class Piece {
             }
         }
         for (let px = 0; px < this.footprint.length; px++) for (let py = 0; py < this.footprint[px].length; py++) {
-            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, true, this.type, this.ghost);
+            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, true, this.footprint[px][py], this.ghost);
         }
         //debug.innerHTML = JSON.stringify(`${mx}, ${my}, ${this.x}, ${this.y}, ${px + mx + this.x}, ${py + my + this.y}`);
         this.mts = false;
@@ -340,7 +413,7 @@ class Piece {
     lock () {
         //add static footprint to current position
         for (let px = 0; px < this.footprint.length; px++) for (let py = 0; py < this.footprint[px].length; py++) {
-            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, false, this.type, this.ghost);
+            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, false, this.footprint[px][py], this.ghost);
         }
         this.locked = true;
         G.ghost = null;
@@ -495,10 +568,18 @@ class Piece {
             let line = lines.concat();
             for (let y = 0; y < G.grid[x].length; y++) {
                 if (line[y]) {
+                    try {
+                    //remove down component to cells above
+                    if (G.grid[x][y + 1].type !== null) G.grid[x][y + 1].type = G.grid[x][y + 1].type.replace('d', '');
+                    //remove up component to cells below
+                    if (y > 0) if (G.grid[x][y - 1].type !== null) G.grid[x][y - 1].type = G.grid[x][y - 1].type.replace('u', '');
                     G.grid[x].splice(y, 1);
                     G.grid[x].push(new Cell(false, "#000", false, null, false));
                     line.splice(y, 1);
                     y--;
+                    } catch (e) {
+                        alert(e.stack);
+                    }
                 }
             }
         }
@@ -596,7 +677,7 @@ class Piece {
         }
         //add footprint to new position
         for (let px = 0; px < this.footprint.length; px++) for (let py = 0; py < this.footprint[px].length; py++) {
-            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, true, this.type, this.ghost);
+            if (this.footprint[px][py] != " ") G.grid[this.x + px][this.y + py] = new Cell(true, this.color, true, this.footprint[px][py], this.ghost);
         }
         this.tspin = true;
         if (kickOffset[0] != 0 || kickOffset[1] != 0) {
@@ -613,6 +694,9 @@ class Cell {
         this.moving = moving;
         this.type = type;
         this.ghost = ghost;
+        if (!G.connectedTextures && this.type !== null) {
+            this.type = this.type.replace(/[rlud]+/, '');
+        }
     }
 }
 
@@ -689,7 +773,9 @@ function main() {
                 if (G.grid[x][y].ghost) {
                     ctx.globalAlpha = 0.5;
                 }
-                ctx.drawImage(G.img, G.atlas[G.grid[x][y].type][0], G.atlas[G.grid[x][y].type][1], 24, 24, x * (cellSize), (G.grid[x].length - y - 19) * (cellSize), cellSize, cellSize);
+                let atlasKey = G.grid[x][y].type;
+                if (!G.connectedTextures) atlasKey = atlasKey.replace(/[rlud]+/, '');
+                ctx.drawImage(G.img, G.atlas[atlasKey][0] * 24, G.atlas[atlasKey][1] * 24, 24, 24, x * (cellSize), (G.grid[x].length - y - 19) * (cellSize), cellSize, cellSize);
                 ctx.globalAlpha = 1;
             } catch (err) {
                 //debug.innerHTML = err.stack;
@@ -718,7 +804,7 @@ function main() {
     } else {
         if (G.mode != 1) G.gravity.are = 60 / (G.level + 1);
     }
-    debug.innerHTML = `${G.gravity.fall}, ${G.gravity.speed}, ${G.gravity.speedup}`;
+    //debug.innerHTML = `${G.gravity.fall}, ${G.gravity.speed}, ${G.gravity.speedup}`;
     G.gravity.fall--;
     while (G.gravity.fall <= 0) {
         if (G.piece.move(0, -1) && G.key.down.soft) G.score++;
@@ -817,25 +903,46 @@ function drawNext() {
         nextStartTop = (3 - G.pieces[G.next[n]].height) / 2;
         nextCtx.fillStyle = G.pieces[G.next[n]].color;
         for (let x = 0; x < G.pieces[G.next[n]].width; x++) for(let y = 0; y < G.pieces[G.next[n]].height; y++) {
-            if (G.pieces[G.next[n]].shape[x][y] != " ") nextCtx.drawImage(G.img, G.atlas[G.next[n]][0], G.atlas[G.next[n]][1], cellSize, cellSize, (nextStartLeft + x) * cellSize, (nextStartTop + (G.pieces[G.next[n]].height - y - 1 + (n * 3))) * cellSize, cellSize, cellSize);
+            let atlasKey = G.pieces[G.next[n]].shape[x][y];
+            if (!G.connectedTextures) atlasKey = atlasKey.replace(/[rlud]+/, "");
+            if (G.pieces[G.next[n]].shape[x][y] != " ") nextCtx.drawImage(G.img, G.atlas[atlasKey][0] * 24, G.atlas[atlasKey][1] * 24, cellSize, cellSize, (nextStartLeft + x) * cellSize, (nextStartTop + (G.pieces[G.next[n]].height - y - 1 + (n * 3))) * cellSize, cellSize, cellSize);
         }
         if (G.mode == 1) break;
     }
 }
 
 function updateSettings() {
+    try {
     let dasDelay = parseInt(document.getElementById('das-delay').value);
     G.key.das.delay = dasDelay;
     let dasSpeed = parseInt(document.getElementById('das-speed').value);
     G.key.das.speed = dasSpeed;
     let softSpeed = parseInt(document.getElementById('soft-drop-speed').value);
     G.gravity.speedup = softSpeed;
+    let connectedTextures = document.getElementById('connected-textures').value;
+    let reload = false;
+    if (G.skinLocation != document.getElementById('skin-file').value) reload = true;
+    G.skinLocation = document.getElementById('skin-file').value;
+    if (connectedTextures == "true") {
+        G.connectedTextures = true;
+    } else {
+        G.connectedTextures = false;
+    }
     let settingsExport = {
         bindings: G.key.bindings,
         das: G.key.das,
-        softSpeed: G.gravity.speedup
+        softSpeed: G.gravity.speedup,
+        connectedTextures: G.connectedTextures,
+        skin: G.skinLocation,
     }
     window.localStorage.setItem("settings", JSON.stringify(settingsExport));
+    if (reload) {
+        alert("Skin location change detected. This page will now be reloaded.");
+        location.reload();
+    }
+    } catch (e) {
+        alert(e.stack);
+    } 
 }
 
 function rebind(key) {
@@ -922,7 +1029,9 @@ document.addEventListener('keydown', (e) => {
         holdStartTop = (3 - G.pieces[G.hold].height) / 2;
         holdCtx.fillStyle = G.pieces[G.hold].color;
         for (let x = 0; x < G.pieces[G.hold].width; x++) for(let y = 0; y < G.pieces[G.hold].height; y++) {
-            if (G.pieces[G.hold].shape[x][y] != " ") holdCtx.drawImage(G.img, G.atlas[G.hold][0], G.atlas[G.hold][1], 24, 24, (holdStartLeft + x) * cellSize, (holdStartTop + (G.pieces[G.hold].height - y - 1)) * cellSize, cellSize, cellSize);
+            let atlasKey = G.pieces[G.hold].shape[x][y];
+            if (!G.connectedTextures) atlasKey = atlasKey.replace(/[rlud]+/, '');
+            if (G.pieces[G.hold].shape[x][y] != " ") holdCtx.drawImage(G.img, G.atlas[atlasKey][0] * 24, G.atlas[atlasKey][1] * 24, 24, 24, (holdStartLeft + x) * cellSize, (holdStartTop + (G.pieces[G.hold].height - y - 1)) * cellSize, cellSize, cellSize);
         }
         G.holdable = false;
         G.stats.actions[G.stats.pieces.length - 1]++;
@@ -937,7 +1046,7 @@ document.addEventListener('keydown', (e) => {
             G.stats.actions[G.stats.pieces.length - 1]++;
         }
     } catch (err) {
-        debug.innerHTML = err.stack;
+        //debug.innerHTML = err.stack;
     }
 });
 
@@ -955,3 +1064,20 @@ document.addEventListener('keyup', (e) => {
         G.key.down.soft = false;
     }
 });
+
+G.img = new Image();
+async function Load() {
+    let response, data;
+    try {
+        response = await fetch(G.skinLocation);
+        data = await response.json();
+    } catch (e) {
+        response = await fetch("skin.json");
+        data = await response.json();
+    }
+    G.skin = data;
+    G.img.src = G.skin.src;
+    G.img.onload = () => setInterval(main, 1000/60);
+}
+
+Load();

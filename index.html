@@ -5,6 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css"/>
     </head>
     <body>
+
         <h2 id="score">LEVEL 00 | LINES 0000 | SCORE 0000000</h2>
         <div id="main">
             <div id="hold-container">
@@ -26,7 +27,7 @@
                 <h3 style="opacity: 0">T-SPIN DOUBLE MINI</h3>
             </div>
         </div><br>
-        <p>V0.2.5</p>
+        <p>V0.2.6</p>
         <p id="debug" style="display:none">DEBUG</p>
         <button id="pause" onclick="pause()">PAUSE</button><br>
         Starting Level: <input id="start-level" type="number" max="29" value="0"><br>
@@ -46,6 +47,10 @@
                 Speed: <input id="das-speed" type="number" value="3" max="60">F<br>
                 <br>
                 <b>SOFT DROP:</b> <input id="soft-drop-speed" type="number" value="5" max="600">x<br>
+                <br>
+                <b>CONNECTED TEXTURES:</b> <select id="connected-textures"><option value="false">OFF</option><option value="true" selected>ON</option></select><br>
+                <br>
+                <b>SKIN FILE:</b> <input id="skin-file" type="text"><br>
             </div>
             <div id="key" class="set-cat">
                 <b>KEYS</b><br>
