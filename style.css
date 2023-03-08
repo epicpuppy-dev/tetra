@@ -3,6 +3,7 @@ body {
     color: white;
     font-family: monospace;
     text-align: center;
+    transition: background-color 1s;
 }
 canvas {
     background-color: black;

@@ -20,6 +20,7 @@ ctx.lineWidth = 2;
 colors = ["#000000", "#00ffff", "#0000ff", "#ff8800", "#ffff00", "#00ff00", "#dd00dd", "#ff0000", "#222222", "#000000", "#555555"];
 const G = {};
 G.display = document.getElementById('score');
+G.highscore = 0;
 G.level = 0;
 G.mode = 0;
 G.score = 0;
@@ -286,6 +287,14 @@ G.stats.actions = [0];
 G.stats.score = [0];
 G.stats.totalpieces = 0;
 
+//Load Highscore
+const highscoreData = window.localStorage.getItem('highscore');
+if (highscoreData !== null) {
+    const highscore = JSON.parse(highscoreData);
+    if (highscore !== undefined) G.highscore = highscore;
+    document.getElementById('high').innerHTML = "HIGH SCORE " + "0".repeat(7 - G.highscore.toString().length) + G.highscore;
+}
+
 //Load Settings
 const settingsData = window.localStorage.getItem('settings');
 if (settingsData !== null) {
@@ -348,7 +357,14 @@ class Piece {
                 break;
         }
         for (let x = 0; x < this.footprint.length; x++) for (let y = 0; y < this.footprint[x].length; y++) {
-            if (this.footprint[x][y] != " ") if (G.grid[this.x + x][this.y + y].solid) lose = true;
+            if (this.footprint[x][y] != " ") if (G.grid[this.x + x][this.y + y].solid) {
+                G.lose = true;
+                if (G.score > G.highscore) {
+                    G.highscore = G.score;
+                    window.localStorage.setItem('highscore', JSON.stringify(G.highscore));
+                    document.getElementById('high').innerHTML = "HIGH SCORE " + "0".repeat(7 - G.highscore.toString().length) + G.highscore;
+                }
+            }
         }
         for (let x = 0; x < this.footprint.length; x++) for (let y = 0; y < this.footprint[x].length; y++) {
             if (this.footprint[x][y] != " ") G.grid[this.x + x][this.y + y] = new Cell(true, this.color, true, this.footprint[x][y], this.ghost);
@@ -742,9 +758,11 @@ function main() {
         nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
         return;
     }
-    G.stats.actions.push(0);
-    G.stats.pieces.push(0);
-    G.stats.score.push(0);
+    if (!G.lose) {
+        G.stats.actions.push(0);
+        G.stats.pieces.push(0);
+        G.stats.score.push(0);
+    }
     /*if (G.stats.actions.length > 1800) G.stats.actions.shift();
     if (G.stats.pieces.length > 1800) G.stats.pieces.shift();
     if (G.stats.score.length > 1800) G.stats.score.shift();*/
@@ -781,6 +799,12 @@ function main() {
                 //debug.innerHTML = err.stack;
             }
         }
+    }
+    if (G.lose == true) {
+        document.body.style.backgroundColor = "#300";
+        return;
+    } else {
+        document.body.style.backgroundColor = "#000";
     }
     if (G.piece == null) {
         if (--G.gravity.are <= 0) {
@@ -888,7 +912,7 @@ function newGame() {
             G.grid[x][y] = new Cell(false, "#000", false, null, false);
         }
     }
-    G.display.innerHTML = `LEVEL ${G.level} | LINES 0000 | SCORE 0000000`;
+    G.display.innerHTML = `LEVEL ${"0".repeat(2 - G.level.toString.length) + G.level} | LINES 0000 | SCORE 0000000`;
     G.stats.pieces = [0];
     G.stats.actions = [0];
     G.stats.score = [0];
@@ -973,6 +997,10 @@ document.addEventListener('keydown', (e) => {
     if (e.code == G.key.bindings.retry) {
         newGame();
         return;
+    }
+    if (G.lose) return;
+    if (e.code == G.key.bindings.pause) {
+        pause();
     }
     if (e.code == G.key.bindings.left) {
         if (!G.key.down.left) {
