@@ -18,6 +18,22 @@ nextCanvas.height = cellSize * 15;
 ctx.lineWidth = 2;
 //BACKGROUND, I, J, L, O, S, T, Z, GRID, PAGE BG, BORDER
 colors = ["#000000", "#00ffff", "#0000ff", "#ff8800", "#ffff00", "#00ff00", "#dd00dd", "#ff0000", "#222222", "#000000", "#555555"];
+const officialSkins = [
+    "skins/8bit.json",
+    "skins/8x8.json",
+    "skins/default.json",
+    "skins/gameboy.json",
+    "skins/gameboycolor.json",
+    "skins/minimalist.json",
+    "skins/monochrome.json",
+    "skins/monochrome8x8.json",
+    "skins/neon.json",
+    "skins/nes.json",
+    "skins/rounded.json",
+    "skins/snes.json",
+    "skins/tiny.json",
+    "skins/wireframe.json"
+];
 const G = {};
 G.display = document.getElementById('score');
 G.highscore = 0;
@@ -42,9 +58,9 @@ G.bind = null;
 G.hold = null;
 G.holdable = true;
 G.firstHold = 2;
-G.skinLocation = "skin.json";
+G.skinLocation = "skins/default.json";
 G.skin = {
-    src: "img.png",
+    src: "img/default.png",
     size: {
         width: 192,
         height: 216
@@ -312,7 +328,15 @@ if (settingsData !== null) {
     document.getElementById('das-delay').value = G.key.das.delay;
     document.getElementById('soft-drop-speed').value = G.gravity.speedup;
     document.getElementById('connected-textures').value = G.connectedTextures;
-    document.getElementById('skin-file').value = G.skinLocation;
+    if (G.skinLocation !== undefined) {
+        if (officialSkins.includes(G.skinLocation)) {
+            document.getElementById('select-skin').value = G.skinLocation;
+            document.getElementById('skin-file').value = "";
+        } else {
+            document.getElementById('select-skin').value = "custom";
+            document.getElementById('skin-file').value = G.skinLocation;
+        }
+    }
 }
 
 class Piece {
@@ -945,8 +969,12 @@ function updateSettings() {
     G.gravity.speedup = softSpeed;
     let connectedTextures = document.getElementById('connected-textures').value;
     let reload = false;
-    if (G.skinLocation != document.getElementById('skin-file').value) reload = true;
-    G.skinLocation = document.getElementById('skin-file').value;
+    let newSkin = document.getElementById('select-skin').value;
+    if (newSkin == "custom") {
+        newSkin = document.getElementById('skin-file').value;
+    }
+    if (G.skinLocation != newSkin) reload = true;
+    G.skinLocation = newSkin;
     if (connectedTextures == "true") {
         G.connectedTextures = true;
     } else {
@@ -1100,7 +1128,7 @@ async function Load() {
         response = await fetch(G.skinLocation);
         data = await response.json();
     } catch (e) {
-        response = await fetch("skin.json");
+        response = await fetch("skins/default.json");
         data = await response.json();
     }
     G.skin = data;
