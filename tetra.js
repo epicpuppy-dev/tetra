@@ -24,6 +24,7 @@ const officialSkins = [
     "skins/default.json",
     "skins/gameboy.json",
     "skins/gameboycolor.json",
+    "skins/legacy.json",
     "skins/minimalist.json",
     "skins/monochrome.json",
     "skins/monochrome8x8.json",
@@ -908,7 +909,7 @@ function newGame() {
     G.mode = parseInt(document.getElementById('mode').value);
     G.score = 0;
     G.lines = 0;
-    G.btb = 0;
+    G.btb = -1;
     G.tsanim = 0;
     document.getElementById("b2b").style.display = 'none';
     G.nextLevel = Math.min(G.level * 10 + 10, Math.max(100, G.level * 10 - 50));
