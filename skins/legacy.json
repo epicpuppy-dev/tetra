@@ -1,0 +1,8 @@
+{
+    "src": "img/legacy.png",
+    "size": {
+        "width": 192,
+        "height": 216
+    },
+    "tileSize": 24
+}
