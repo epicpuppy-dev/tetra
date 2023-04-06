@@ -33,7 +33,8 @@ const officialSkins = [
     "skins/rounded.json",
     "skins/snes.json",
     "skins/tiny.json",
-    "skins/wireframe.json"
+    "skins/wireframe.json",
+    "skins/cursed.json"
 ];
 const G = {};
 G.display = document.getElementById('score');
