@@ -34,7 +34,10 @@ const officialSkins = [
     "skins/snes.json",
     "skins/tiny.json",
     "skins/wireframe.json",
-    "skins/cursed.json"
+    "skins/cursed.json",
+    "skins/brown.json",
+    "skins/mine.json",
+    "skins/tinycursedrounded.json"
 ];
 const G = {};
 G.display = document.getElementById('score');
@@ -819,7 +822,7 @@ function main() {
                 }
                 let atlasKey = G.grid[x][y].type;
                 if (!G.connectedTextures) atlasKey = atlasKey.replace(/[rlud]+/, '');
-                ctx.drawImage(G.img, G.atlas[atlasKey][0] * 24, G.atlas[atlasKey][1] * 24, 24, 24, x * (cellSize), (G.grid[x].length - y - 19) * (cellSize), cellSize, cellSize);
+                ctx.drawImage(G.img, G.atlas[atlasKey][0] * G.skin.tileSize, G.atlas[atlasKey][1] * G.skin.tileSize, G.skin.tileSize, G.skin.tileSize, x * (cellSize), (G.grid[x].length - y - 19) * (cellSize), cellSize, cellSize);
                 ctx.globalAlpha = 1;
             } catch (err) {
                 //debug.innerHTML = err.stack;
@@ -955,7 +958,7 @@ function drawNext() {
         for (let x = 0; x < G.pieces[G.next[n]].width; x++) for(let y = 0; y < G.pieces[G.next[n]].height; y++) {
             let atlasKey = G.pieces[G.next[n]].shape[x][y];
             if (!G.connectedTextures) atlasKey = atlasKey.replace(/[rlud]+/, "");
-            if (G.pieces[G.next[n]].shape[x][y] != " ") nextCtx.drawImage(G.img, G.atlas[atlasKey][0] * 24, G.atlas[atlasKey][1] * 24, cellSize, cellSize, (nextStartLeft + x) * cellSize, (nextStartTop + (G.pieces[G.next[n]].height - y - 1 + (n * 3))) * cellSize, cellSize, cellSize);
+            if (G.pieces[G.next[n]].shape[x][y] != " ") nextCtx.drawImage(G.img, G.atlas[atlasKey][0] * G.skin.tileSize, G.atlas[atlasKey][1] * G.skin.tileSize, G.skin.tileSize, G.skin.tileSize, (nextStartLeft + x) * cellSize, (nextStartTop + (G.pieces[G.next[n]].height - y - 1 + (n * 3))) * cellSize, cellSize, cellSize);
         }
         if (G.mode == 1) break;
     }
@@ -1089,7 +1092,7 @@ document.addEventListener('keydown', (e) => {
         for (let x = 0; x < G.pieces[G.hold].width; x++) for(let y = 0; y < G.pieces[G.hold].height; y++) {
             let atlasKey = G.pieces[G.hold].shape[x][y];
             if (!G.connectedTextures) atlasKey = atlasKey.replace(/[rlud]+/, '');
-            if (G.pieces[G.hold].shape[x][y] != " ") holdCtx.drawImage(G.img, G.atlas[atlasKey][0] * 24, G.atlas[atlasKey][1] * 24, 24, 24, (holdStartLeft + x) * cellSize, (holdStartTop + (G.pieces[G.hold].height - y - 1)) * cellSize, cellSize, cellSize);
+            if (G.pieces[G.hold].shape[x][y] != " ") holdCtx.drawImage(G.img, G.atlas[atlasKey][0] * G.skin.tileSize, G.atlas[atlasKey][1] * G.skin.tileSize, G.skin.tileSize, G.skin.tileSize, (holdStartLeft + x) * cellSize, (holdStartTop + (G.pieces[G.hold].height - y - 1)) * cellSize, cellSize, cellSize);
         }
         G.holdable = false;
         G.stats.actions[G.stats.pieces.length - 1]++;
