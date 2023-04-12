@@ -1,0 +1,8 @@
+{
+    "src": "img/mine.png",
+    "size": {
+        "width": 128,
+        "height": 144
+    },
+    "tileSize": 16
+}
