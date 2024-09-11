@@ -808,7 +808,7 @@ function main() {
     if (G.level.toString().length < 2) levelDisplay = "0".repeat(2 - G.level.toString().length) + G.level;
     else levelDisplay = G.level;
     if (G.lines.toString().length < 4) lineDisplay = "0".repeat(4 - G.lines.toString().length) + G.lines;
-    else lineDisplay = G.line;
+    else lineDisplay = G.lines;
     if (G.score.toString().length < 7) scoreDisplay = "0".repeat(7 - G.score.toString().length) + G.score;
     else scoreDisplay = G.score;
     G.display.innerHTML = `LEVEL ${levelDisplay} | LINES ${lineDisplay} | SCORE ${scoreDisplay}`;
