@@ -859,11 +859,11 @@ function main() {
     }
     //debug.innerHTML = `${G.gravity.fall}, ${G.gravity.speed}, ${G.gravity.speedup}`;
     G.gravity.fall--;
+    while (G.gravity.fall <= 0) {
+        if (G.piece !== null && G.piece.move(0, -1) && G.key.down.soft) G.score++;
+        G.gravity.fall += G.gravity.speed;
+    }
     if (G.piece !== null) {
-        while (G.gravity.fall <= 0) {
-            if (G.piece.move(0, -1) && G.key.down.soft) G.score++;
-            G.gravity.fall += G.gravity.speed;
-        }
         if (G.piece.onFloor()) {
             if (--G.gravity.lock <= 0) {
                 try {
