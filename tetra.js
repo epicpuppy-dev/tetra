@@ -313,7 +313,7 @@ const highscoreData = window.localStorage.getItem('highscore');
 if (highscoreData !== null) {
     const highscore = JSON.parse(highscoreData);
     if (highscore !== undefined) G.highscore = highscore;
-    document.getElementById('high').innerHTML = "HIGH SCORE " + "0".repeat(7 - G.highscore.toString().length) + G.highscore;
+    document.getElementById('high').innerHTML = "HIGH SCORE " + "0".repeat(Math.max(7 - G.highscore.toString().length, 0)) + G.highscore;
 }
 
 //Load Settings
@@ -391,7 +391,7 @@ class Piece {
                 if (G.score > G.highscore) {
                     G.highscore = G.score;
                     window.localStorage.setItem('highscore', JSON.stringify(G.highscore));
-                    document.getElementById('high').innerHTML = "HIGH SCORE " + "0".repeat(7 - G.highscore.toString().length) + G.highscore;
+                    document.getElementById('high').innerHTML = "HIGH SCORE " + "0".repeat(Math.max(7 - G.highscore.toString().length, 0)) + G.highscore;
                 }
             }
         }
@@ -860,10 +860,10 @@ function main() {
     //debug.innerHTML = `${G.gravity.fall}, ${G.gravity.speed}, ${G.gravity.speedup}`;
     G.gravity.fall--;
     while (G.gravity.fall <= 0) {
-        if (G.piece.move(0, -1) && G.key.down.soft) G.score++;
-        G.gravity.fall += G.gravity.speed;
+        if (G.piece !== null && G.piece.move(0, -1) && G.key.down.soft) G.score++;
+        else if (G.piece !== null) G.gravity.fall += G.gravity.speed;
     }
-    if (G.piece.onFloor()) {
+    if (G.piece !== null && G.piece.onFloor()) {
         if (--G.gravity.lock <= 0) {
             try {
                 G.piece.lock();
@@ -872,7 +872,7 @@ function main() {
             }
             G.piece = null;
         }
-    } else {
+    } else if (G.piece !== null) {
         if (G.mode != 1) G.gravity.lock = 60;
         else G.gravity.lock = 5;
     }
@@ -941,7 +941,7 @@ function newGame() {
             G.grid[x][y] = new Cell(false, "#000", false, null, false);
         }
     }
-    G.display.innerHTML = `LEVEL ${"0".repeat(2 - G.level.toString.length) + G.level} | LINES 0000 | SCORE 0000000`;
+    G.display.innerHTML = `LEVEL ${"0".repeat(Math.max(2 - G.level.toString.length, 0)) + G.level} | LINES 0000 | SCORE 0000000`;
     G.stats.pieces = [0];
     G.stats.actions = [0];
     G.stats.score = [0];
