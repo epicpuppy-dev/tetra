@@ -1,0 +1,43 @@
+{
+  "name": "tetra",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "clean": "run-script-os",
+    "clean:windows": "rmdir dist /s /q&&mkdir dist",
+    "clean:linux": "rm dist -f -R&&mkdir dist",
+    "start": "webpack serve --mode development --open",
+    "build-dev": "npm run clean&&webpack --mode development",
+    "build-prod": "npm run clean&&webpack --mode production",
+    "preversion": "npm run build-prod",
+    "version": "node script/setversion.cjs&&git stage src/version.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/epicpuppy-dev/tetra.git"
+  },
+  "author": "epicpuppy.dev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/epicpuppy-dev/tetra/issues"
+  },
+  "homepage": "https://github.com/epicpuppy-dev/tetra#readme",
+  "description": "",
+  "devDependencies": {
+    "babel-loader": "^9.1.2",
+    "css-loader": "^6.10.0",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.5.1",
+    "mini-css-extract-plugin": "^2.8.1",
+    "postcss-loader": "^8.1.1",
+    "run-script-os": "^1.1.6",
+    "sass-loader": "^14.1.1",
+    "style-loader": "^3.3.4",
+    "ts-loader": "^9.4.3",
+    "typescript": "^5.4.2",
+    "url-loader": "^4.1.1",
+    "webpack": "^5.84.1",
+    "webpack-cli": "^5.1.1",
+    "webpack-dev-server": "^4.15.1"
+  }
+}

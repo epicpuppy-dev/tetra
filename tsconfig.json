@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "sourceMap": true,
+        "strict": true,
+        "noImplicitReturns": true,
+        "noImplicitAny": true,
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "target": "ES6",
+        "allowJs": true,
+        "lib": [
+            "DOM",
+            "ES6"
+        ]
+    },
+    "include": [
+        "./src/**/*",
+        "src/webpack.d.ts"    
+    ]
+}
