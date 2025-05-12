@@ -303,9 +303,8 @@ G.piece = null;
 G.ghost = null;
 
 G.stats = {};
-G.stats.pieces = [0];
-G.stats.actions = [0];
-G.stats.score = [0];
+G.stats.time = 0;
+G.stats.actions = 0;
 G.stats.totalpieces = 0;
 
 //Load Highscore
@@ -499,22 +498,17 @@ class Piece {
         if (G.mode != 1) switch (cleared) {
             case 4:
                 G.score += 800 * (G.level + 1);
-                G.stats.score[G.stats.pieces.length - 1] += 800 * (G.level + 1);
                 if (G.btb >= 0) {
                     G.score += 400 * (G.level + 1);
-                    G.stats.score[G.stats.pieces.length - 1] += 400 * (G.level + 1);
                 }
                 G.btb++;
                 break;
             case 3:
                 G.score += 500 * (G.level + 1);
-                G.stats.score[G.stats.pieces.length - 1] += 500 * (G.level + 1);
                 if (tspin) {
                     G.score += 1100 * (G.level + 1);
-                    G.stats.score[G.stats.pieces.length - 1] += 1100 * (G.level + 1);
                     if (G.btb >= 0) {
                         G.score += 800 * (G.level + 1);
-                        G.stats.score[G.stats.pieces.length - 1] += 800 * (G.level + 1);
                     }
                     G.tsanim = 120;
                     document.getElementById('tspin').innerHTML = "T-SPIN TRIPLE";
@@ -525,23 +519,18 @@ class Piece {
                 break;
             case 2:
                 G.score += 300 * (G.level + 1);
-                G.stats.score[G.stats.pieces.length - 1] += 300 * (G.level + 1);
                 if (tspin) {
                     G.score += 900 * (G.level + 1);
-                    G.stats.score[G.stats.pieces.length - 1] += 900 * (G.level + 1);
                     if (G.btb >= 0) {
                         G.score += 600 * (G.level + 1);
-                        G.stats.score[G.stats.pieces.length - 1] += 600 * (G.level + 1);
                     }
                     G.tsanim = 120;
                     document.getElementById('tspin').innerHTML = "T-SPIN DOUBLE";
                     G.btb++;
                 } else if (mts) {
                     G.score += 100 * (G.level + 1);
-                    G.stats.score[G.stats.pieces.length - 1] += 100 * (G.level + 1);
                     if (G.btb >= 0) {
                         G.score += 200 * (G.level + 1);
-                        G.stats.score[G.stats.pieces.length - 1] += 200 * (G.level + 1);
                     }
                     G.tsanim = 90;
                     document.getElementById('tspin').innerHTML = "MINI T-SPIN DOUBLE";
@@ -552,20 +541,16 @@ class Piece {
                 break;
             case 1:
                 G.score += 100 * (G.level + 1);
-                G.stats.score[G.stats.pieces.length - 1] += 100 * (G.level + 1);
                 if (tspin) {
                     G.score += 700 * (G.level + 1);
-                    G.stats.score[G.stats.pieces.length - 1] += 700 * (G.level + 1);
                     if (G.btb >= 0) {
                         G.score += 400 * (G.level + 1);
-                        G.stats.score[G.stats.pieces.length - 1] += 400 * (G.level + 1);
                     }
                     G.tsanim = 120;
                     document.getElementById('tspin').innerHTML = "T-SPIN SINGLE";
                     G.btb++;
                 } else if (mts) {
                     G.score += 100 * (G.level + 1);
-                    G.stats.score[G.stats.pieces.length - 1] += 100 * (G.level + 1);
                     G.tsanim = 90;
                     document.getElementById('tspin').innerHTML = "MINI T-SPIN SINGLE";
                     G.btb++;
@@ -576,13 +561,11 @@ class Piece {
             default:
                 if (tspin) {
                     G.score += 400 * (G.level + 1);
-                    G.stats.score[G.stats.pieces.length - 1] += 400 * (G.level + 1);
                     G.tsanim = 120;
                     document.getElementById('tspin').innerHTML = "T-SPIN";
                 }
                 if (mts) {
                     G.score += 100 * (G.level + 1);
-                    G.stats.score[G.stats.pieces.length - 1] += 100 * (G.level + 1);
                     G.tsanim = 90;
                     document.getElementById('tspin').innerHTML = "MINI T-SPIN";
                 }
@@ -592,19 +575,15 @@ class Piece {
             switch (cleared) {
                 case 1:
                     G.score += 40 * (G.level + 1);
-                    G.stats.score[G.stats.pieces.length - 1] += 40 * (G.level + 1);
                     break;
                 case 2:
                     G.score += 100 * (G.level + 1);
-                    G.stats.score[G.stats.pieces.length - 1] += 100 * (G.level + 1);
                     break;
                 case 3:
                     G.score += 300 * (G.level + 1);
-                    G.stats.score[G.stats.pieces.length - 1] += 300 * (G.level + 1);
                     break;
                 case 4:
                     G.score += 1200 * (G.level + 1);
-                    G.stats.score[G.stats.pieces.length - 1] += 1200 * (G.level + 1);
                     break;
             }
             if (cleared > 0) G.gravity.are += 20;
@@ -640,13 +619,10 @@ class Piece {
             //debug.innerHTML = `yoy`;
             G.pcanim = 200;
             G.score += 2000 * (G.level + 1);
-            G.stats.score[G.stats.pieces.length - 1] += 2000 * (G.level + 1);
             if (G.btb > 0) {
                 G.score += 2000 * (G.level + 1);
-                G.stats.score[G.stats.pieces.length - 1] += 2000 * (G.level + 1);
             }
         }
-        G.stats.pieces[G.stats.pieces.length - 1]++;
         G.stats.totalpieces++;
         if (G.btb > 0) {
             document.getElementById("b2b").innerHTML = "B2B x" + G.btb;
@@ -788,13 +764,8 @@ function main() {
         return;
     }
     if (!G.lose) {
-        G.stats.actions.push(0);
-        G.stats.pieces.push(0);
-        G.stats.score.push(0);
+        G.stats.time++;
     }
-    /*if (G.stats.actions.length > 1800) G.stats.actions.shift();
-    if (G.stats.pieces.length > 1800) G.stats.pieces.shift();
-    if (G.stats.score.length > 1800) G.stats.score.shift();*/
     try {
         if (G.key.down.left || G.key.down.right) {
             G.key.das.left--;
@@ -892,11 +863,10 @@ function main() {
     if (G.pcanim <= 100) {
         document.getElementById('pc').style.opacity = G.pcanim / 100;
     }
-    //debug.innerHTML = `${G.stats.pieces.length}, ${G.stats.actions.length}, ${G.stats.score.length}`
     document.getElementById('pcs').innerHTML = "Pieces: " + G.stats.totalpieces;
-    document.getElementById('pps').innerHTML = "PPS: " + (G.stats.pieces.reduce((a, b) => a + b) / G.stats.pieces.length * 60).toFixed(2) + "/s";
-    document.getElementById('apm').innerHTML = "APM: " + (G.stats.actions.reduce((a, b) => a + b) / G.stats.actions.length * 3600).toFixed(1) + "/m";
-    document.getElementById('sps').innerHTML = "SPS: " + (G.stats.score.reduce((a, b) => a + b) / G.stats.score.length * 60).toFixed(1) + "/s";
+    document.getElementById('pps').innerHTML = "PPS: " + (G.stats.totalpieces / G.stats.time * 60).toFixed(2) + "/s";
+    document.getElementById('apm').innerHTML = "APM: " + (G.stats.actions / G.stats.time * 3600).toFixed(1) + "/m";
+    document.getElementById('sps').innerHTML = "SPS: " + (G.score / G.stats.time * 60).toFixed(1) + "/s";
 }
 
 function newGame() {
@@ -944,9 +914,7 @@ function newGame() {
         }
     }
     G.display.innerHTML = `LEVEL ${"0".repeat(Math.max(2 - G.level.toString.length, 0)) + G.level} | LINES 0000 | SCORE 0000000`;
-    G.stats.pieces = [0];
-    G.stats.actions = [0];
-    G.stats.score = [0];
+    G.stats.actions = 0;
     G.stats.totalpieces = 0;
 }
 
@@ -1043,7 +1011,7 @@ document.addEventListener('keydown', (e) => {
             G.key.das.left = G.key.das.delay;
         }
         G.key.down.left = true;
-        G.stats.actions[G.stats.pieces.length - 1]++;
+        G.stats.actions++;
     }
     if (e.code == G.key.bindings.right) {
         if (!G.key.down.right) {
@@ -1051,7 +1019,7 @@ document.addEventListener('keydown', (e) => {
             G.key.das.left = G.key.das.delay;
         }
         G.key.down.right = true;
-        G.stats.actions[G.stats.pieces.length - 1]++;
+        G.stats.actions++;
     }
     if (e.code == G.key.bindings.soft) {
         if (!G.key.down.soft) {
@@ -1059,19 +1027,18 @@ document.addEventListener('keydown', (e) => {
             G.gravity.fall = G.gravity.speed;
         }
         G.key.down.soft = true;
-        G.stats.actions[G.stats.pieces.length - 1]++;
+        G.stats.actions++;
     }
     if (e.code == G.key.bindings.hard && G.mode != 1) {
         while (!G.piece.onFloor()) {
             G.piece.move(0, -1);
             G.score += 2;
-            G.stats.score[G.stats.pieces.length - 1] += 2;
         }
         G.piece.lock();
         G.piece = null;
         G.gravity.are = 0;
         G.gravity.fall = 0;
-        G.stats.actions[G.stats.pieces.length - 1]++;
+        G.stats.actions++;
     }
     if (e.code == G.key.bindings.hold && G.holdable && G.mode != 1) {
         let newPiece = G.hold;
@@ -1097,16 +1064,16 @@ document.addEventListener('keydown', (e) => {
             if (G.pieces[G.hold].shape[x][y] != " ") holdCtx.drawImage(G.img, G.atlas[atlasKey][0] * G.skin.tileSize, G.atlas[atlasKey][1] * G.skin.tileSize, G.skin.tileSize, G.skin.tileSize, (holdStartLeft + x) * cellSize, (holdStartTop + (G.pieces[G.hold].height - y - 1)) * cellSize, cellSize, cellSize);
         }
         G.holdable = false;
-        G.stats.actions[G.stats.pieces.length - 1]++;
+        G.stats.actions++;
     }
     try {
         if (e.code == G.key.bindings.rotateCW) {
             G.piece.rotate(1);
-            G.stats.actions[G.stats.pieces.length - 1]++;
+            G.stats.actions++;
         }
         if (e.code == G.key.bindings.rotateCCW) {
             G.piece.rotate(-1);
-            G.stats.actions[G.stats.pieces.length - 1]++;
+            G.stats.actions++;
         }
     } catch (err) {
         //debug.innerHTML = err.stack;
