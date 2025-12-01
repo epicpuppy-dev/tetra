@@ -863,6 +863,8 @@ function main() {
     if (G.pcanim <= 100) {
         document.getElementById('pc').style.opacity = G.pcanim / 100;
     }
+    if (G.stats.time > 60 * 60 * 60) document.getElementById('ttp').innerHTML = `Time: ${Math.floor(G.stats.time / 60 / 60 / 60)}:${(Math.floor(G.stats.time / 60 / 60) % 60).toString().padStart(2, "0")}:${(Math.floor(G.stats.time / 60) % 60).toString().padStart(2, "0")}.${(G.stats.time % 60 / 60 * 100).toFixed(0).padStart(2, "0")}`;
+    else document.getElementById('ttp').innerHTML = `Time: ${Math.floor(G.stats.time / 60 / 60)}:${(Math.floor(G.stats.time / 60) % 60).toString().padStart(2, "0")}.${(G.stats.time % 60 / 60 * 100).toFixed(0).padStart(2, "0")}`;
     document.getElementById('pcs').innerHTML = "Pieces: " + G.stats.totalpieces;
     document.getElementById('pps').innerHTML = "PPS: " + (G.stats.totalpieces / G.stats.time * 60).toFixed(2) + "/s";
     document.getElementById('apm').innerHTML = "APM: " + (G.stats.actions / G.stats.time * 3600).toFixed(1) + "/m";
