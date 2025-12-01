@@ -916,6 +916,7 @@ function newGame() {
     G.display.innerHTML = `LEVEL ${"0".repeat(Math.max(2 - G.level.toString.length, 0)) + G.level} | LINES 0000 | SCORE 0000000`;
     G.stats.actions = 0;
     G.stats.totalpieces = 0;
+    G.stats.time = 0;
 }
 
 function drawNext() {
